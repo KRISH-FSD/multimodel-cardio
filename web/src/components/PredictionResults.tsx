@@ -1,5 +1,5 @@
 import { usePatientStore } from '../store/store';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Activity } from 'lucide-react';
 
 export function PredictionResults() {
   const { prediction, error, isLoading } = usePatientStore();
