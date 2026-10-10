@@ -1,0 +1,19 @@
+# CardioVision 3D — Python Dependencies
+# Pin versions for reproducibility
+
+# ML
+scikit-learn>=1.5,<1.6
+pandas>=2.2,<2.3
+numpy>=1.26,<2.0
+joblib>=1.4
+shap>=0.45
+openpyxl>=3.1  # For reading Excel dataset
+
+# API
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.9
+
+# Dev & Testing
+pytest>=8.0
+ruff>=0.6
