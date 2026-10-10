@@ -1,0 +1,1223 @@
+{
+  "dataset": {
+    "name": "Z-Alizadeh Sani",
+    "source": "UCI Machine Learning Repository",
+    "url": "https://archive.ics.uci.edu/dataset/412/z-alizadeh+sani",
+    "sha256": "f2a743ff8692fc213e90611e140b07bc451f02068ab4a925a32535431dc3887d",
+    "n_rows": 303,
+    "n_columns": 59,
+    "csv_filename": "z_alizadeh_sani.csv"
+  },
+  "targets": {
+    "cad": "Cath",
+    "lad": "LAD",
+    "lcx": "LCX",
+    "rca": "RCA"
+  },
+  "forbidden": [
+    "Cath",
+    "LAD",
+    "LCX",
+    "RCA"
+  ],
+  "feature_allowlist": [
+    "Age",
+    "Weight",
+    "Length",
+    "Sex",
+    "BMI",
+    "DM",
+    "HTN",
+    "Current Smoker",
+    "EX-Smoker",
+    "FH",
+    "Obesity",
+    "CRF",
+    "CVA",
+    "Airway disease",
+    "Thyroid Disease",
+    "CHF",
+    "DLP",
+    "BP",
+    "PR",
+    "Edema",
+    "Weak Peripheral Pulse",
+    "Lung rales",
+    "Systolic Murmur",
+    "Diastolic Murmur",
+    "Typical Chest Pain",
+    "Dyspnea",
+    "Function Class",
+    "Atypical",
+    "Nonanginal",
+    "Exertional CP",
+    "LowTH Ang",
+    "Q Wave",
+    "St Elevation",
+    "St Depression",
+    "Tinversion",
+    "LVH",
+    "Poor R Progression",
+    "BBB",
+    "FBS",
+    "CR",
+    "TG",
+    "LDL",
+    "HDL",
+    "BUN",
+    "ESR",
+    "HB",
+    "K",
+    "Na",
+    "WBC",
+    "Lymph",
+    "Neut",
+    "PLT",
+    "EF-TTE",
+    "Region RWMA",
+    "VHD"
+  ],
+  "feature_groups": {
+    "Demographics": [
+      "Age",
+      "Weight",
+      "Length",
+      "Sex",
+      "BMI"
+    ],
+    "Vitals": [
+      "BP",
+      "PR",
+      "Systolic Murmur",
+      "Diastolic Murmur",
+      "Dyspnea",
+      "Atypical",
+      "Nonanginal",
+      "Exertional CP",
+      "LowTH Ang",
+      "Typical Chest Pain"
+    ],
+    "Labs": [
+      "FBS",
+      "CR",
+      "TG",
+      "LDL",
+      "HDL",
+      "BUN",
+      "ESR",
+      "HB",
+      "K",
+      "Na",
+      "WBC",
+      "Lymph",
+      "Neut",
+      "PLT"
+    ],
+    "ECG": [
+      "Q Wave",
+      "St Elevation",
+      "St Depression",
+      "T inversion",
+      "LVH",
+      "Poor R Progression"
+    ],
+    "Echo": [
+      "EF-TTE",
+      "Region RWMA",
+      "VHD"
+    ],
+    "Risk Factors": [
+      "DM",
+      "HTN",
+      "Current Smoker",
+      "EX-Smoker",
+      "FH",
+      "Obesity",
+      "CRF",
+      "CVA",
+      "Airway disease",
+      "Thyroid Disease"
+    ]
+  },
+  "columns": {
+    "Age": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Demographics",
+      "type": "numeric",
+      "min": 30.0,
+      "max": 86.0,
+      "mean": 58.8977,
+      "std": 10.3923,
+      "median": 58.0,
+      "q25": 51.0,
+      "q75": 66.0,
+      "n_unique": 46,
+      "forbidden": false,
+      "required": true
+    },
+    "Weight": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Demographics",
+      "type": "numeric",
+      "min": 48.0,
+      "max": 120.0,
+      "mean": 73.8317,
+      "std": 11.9874,
+      "median": 74.0,
+      "q25": 65.0,
+      "q75": 81.0,
+      "n_unique": 54,
+      "forbidden": false,
+      "required": false
+    },
+    "Length": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Demographics",
+      "type": "numeric",
+      "min": 140.0,
+      "max": 188.0,
+      "mean": 164.7162,
+      "std": 9.3277,
+      "median": 165.0,
+      "q25": 158.0,
+      "q75": 171.0,
+      "n_unique": 44,
+      "forbidden": false,
+      "required": false
+    },
+    "Sex": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Demographics",
+      "type": "binary",
+      "categories": [
+        "Male",
+        "Fmale"
+      ],
+      "value_counts": {
+        "Male": 176,
+        "Fmale": 127
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": true
+    },
+    "BMI": {
+      "dtype": "float64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Demographics",
+      "type": "numeric",
+      "min": 18.115412710007305,
+      "max": 40.90065778377467,
+      "mean": 27.2483,
+      "std": 4.0989,
+      "median": 26.775510204081638,
+      "q25": 24.514380410105744,
+      "q75": 29.411764705882355,
+      "n_unique": 263,
+      "forbidden": false,
+      "required": false
+    },
+    "DM": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 213,
+        "1": 90
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "HTN": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "1",
+        "0"
+      ],
+      "value_counts": {
+        "1": 179,
+        "0": 124
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Current Smoker": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 240,
+        "1": 63
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "EX-Smoker": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 293,
+        "1": 10
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "FH": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 255,
+        "1": 48
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Obesity": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "Y",
+        "N"
+      ],
+      "value_counts": {
+        "Y": 211,
+        "N": 92
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "CRF": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 297,
+        "Y": 6
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "CVA": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 298,
+        "Y": 5
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Airway disease": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 292,
+        "Y": 11
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Thyroid Disease": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Risk Factors",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 296,
+        "Y": 7
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "CHF": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 302,
+        "Y": 1
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "DLP": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 191,
+        "Y": 112
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "BP": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "numeric",
+      "min": 90.0,
+      "max": 190.0,
+      "mean": 129.5545,
+      "std": 18.9381,
+      "median": 130.0,
+      "q25": 120.0,
+      "q75": 140.0,
+      "n_unique": 17,
+      "forbidden": false,
+      "required": true
+    },
+    "PR": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "numeric",
+      "min": 50.0,
+      "max": 110.0,
+      "mean": 75.1419,
+      "std": 8.9118,
+      "median": 70.0,
+      "q25": 70.0,
+      "q75": 80.0,
+      "n_unique": 21,
+      "forbidden": false,
+      "required": true
+    },
+    "Edema": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 291,
+        "1": 12
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Weak Peripheral Pulse": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 298,
+        "Y": 5
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Lung rales": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 292,
+        "Y": 11
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Systolic Murmur": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 262,
+        "Y": 41
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Diastolic Murmur": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 294,
+        "Y": 9
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Typical Chest Pain": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "1",
+        "0"
+      ],
+      "value_counts": {
+        "1": 164,
+        "0": 139
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Dyspnea": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 169,
+        "Y": 134
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Function Class": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "categorical",
+      "categories": [
+        "0",
+        "2",
+        "3",
+        "1"
+      ],
+      "value_counts": {
+        "0": 211,
+        "2": 73,
+        "3": 18,
+        "1": 1
+      },
+      "n_unique": 4,
+      "forbidden": false,
+      "required": false
+    },
+    "Atypical": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 210,
+        "Y": 93
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Nonanginal": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 287,
+        "Y": 16
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Exertional CP": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "categorical",
+      "categories": [
+        "N"
+      ],
+      "value_counts": {
+        "N": 303
+      },
+      "n_unique": 1,
+      "forbidden": false,
+      "required": false
+    },
+    "LowTH Ang": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Vitals",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 301,
+        "Y": 2
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Q Wave": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "ECG",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 287,
+        "1": 16
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "St Elevation": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "ECG",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 289,
+        "1": 14
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "St Depression": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "ECG",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 232,
+        "1": 71
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Tinversion": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 213,
+        "1": 90
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "LVH": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "ECG",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 283,
+        "Y": 20
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "Poor R Progression": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "ECG",
+      "type": "binary",
+      "categories": [
+        "N",
+        "Y"
+      ],
+      "value_counts": {
+        "N": 294,
+        "Y": 9
+      },
+      "n_unique": 2,
+      "forbidden": false,
+      "required": false
+    },
+    "BBB": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Other",
+      "type": "categorical",
+      "categories": [
+        "N",
+        "LBBB",
+        "RBBB"
+      ],
+      "value_counts": {
+        "N": 282,
+        "LBBB": 13,
+        "RBBB": 8
+      },
+      "n_unique": 3,
+      "forbidden": false,
+      "required": false
+    },
+    "FBS": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 62.0,
+      "max": 400.0,
+      "mean": 119.1848,
+      "std": 52.0797,
+      "median": 98.0,
+      "q25": 88.5,
+      "q75": 130.0,
+      "n_unique": 113,
+      "forbidden": false,
+      "required": true
+    },
+    "CR": {
+      "dtype": "float64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 0.5,
+      "max": 2.2,
+      "mean": 1.0556,
+      "std": 0.2643,
+      "median": 1.0,
+      "q25": 0.9,
+      "q75": 1.2,
+      "n_unique": 18,
+      "forbidden": false,
+      "required": true
+    },
+    "TG": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 37.0,
+      "max": 1050.0,
+      "mean": 150.3432,
+      "std": 97.9595,
+      "median": 122.0,
+      "q25": 90.0,
+      "q75": 177.0,
+      "n_unique": 147,
+      "forbidden": false,
+      "required": true
+    },
+    "LDL": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 18.0,
+      "max": 232.0,
+      "mean": 104.6436,
+      "std": 35.3967,
+      "median": 100.0,
+      "q25": 80.0,
+      "q75": 122.0,
+      "n_unique": 110,
+      "forbidden": false,
+      "required": true
+    },
+    "HDL": {
+      "dtype": "float64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 15.9,
+      "max": 111.0,
+      "mean": 40.234,
+      "std": 10.5591,
+      "median": 39.0,
+      "q25": 33.5,
+      "q75": 45.5,
+      "n_unique": 47,
+      "forbidden": false,
+      "required": true
+    },
+    "BUN": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 6.0,
+      "max": 52.0,
+      "mean": 17.5017,
+      "std": 6.9568,
+      "median": 16.0,
+      "q25": 13.0,
+      "q75": 20.0,
+      "n_unique": 33,
+      "forbidden": false,
+      "required": false
+    },
+    "ESR": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 1.0,
+      "max": 90.0,
+      "mean": 19.462,
+      "std": 15.9365,
+      "median": 15.0,
+      "q25": 9.0,
+      "q75": 26.0,
+      "n_unique": 58,
+      "forbidden": false,
+      "required": false
+    },
+    "HB": {
+      "dtype": "float64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 8.9,
+      "max": 17.6,
+      "mean": 13.1535,
+      "std": 1.6105,
+      "median": 13.2,
+      "q25": 12.2,
+      "q75": 14.2,
+      "n_unique": 66,
+      "forbidden": false,
+      "required": true
+    },
+    "K": {
+      "dtype": "float64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 3.0,
+      "max": 6.6,
+      "mean": 4.2307,
+      "std": 0.4582,
+      "median": 4.2,
+      "q25": 3.9,
+      "q75": 4.5,
+      "n_unique": 27,
+      "forbidden": false,
+      "required": true
+    },
+    "Na": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 128.0,
+      "max": 156.0,
+      "mean": 140.9967,
+      "std": 3.8079,
+      "median": 141.0,
+      "q25": 139.0,
+      "q75": 143.0,
+      "n_unique": 25,
+      "forbidden": false,
+      "required": true
+    },
+    "WBC": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 3700.0,
+      "max": 18000.0,
+      "mean": 7562.0462,
+      "std": 2413.7393,
+      "median": 7100.0,
+      "q25": 5800.0,
+      "q75": 8800.0,
+      "n_unique": 78,
+      "forbidden": false,
+      "required": true
+    },
+    "Lymph": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 7.0,
+      "max": 60.0,
+      "mean": 32.3993,
+      "std": 9.9726,
+      "median": 32.0,
+      "q25": 26.0,
+      "q75": 39.0,
+      "n_unique": 50,
+      "forbidden": false,
+      "required": false
+    },
+    "Neut": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 32.0,
+      "max": 89.0,
+      "mean": 60.1485,
+      "std": 10.1825,
+      "median": 60.0,
+      "q25": 52.5,
+      "q75": 67.0,
+      "n_unique": 52,
+      "forbidden": false,
+      "required": false
+    },
+    "PLT": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Labs",
+      "type": "numeric",
+      "min": 25.0,
+      "max": 742.0,
+      "mean": 221.4884,
+      "std": 60.7962,
+      "median": 210.0,
+      "q25": 183.5,
+      "q75": 250.0,
+      "n_unique": 135,
+      "forbidden": false,
+      "required": false
+    },
+    "EF-TTE": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Echo",
+      "type": "numeric",
+      "min": 15.0,
+      "max": 60.0,
+      "mean": 47.231,
+      "std": 8.9272,
+      "median": 50.0,
+      "q25": 45.0,
+      "q75": 55.0,
+      "n_unique": 11,
+      "forbidden": false,
+      "required": true
+    },
+    "Region RWMA": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Echo",
+      "type": "categorical",
+      "categories": [
+        "0",
+        "2",
+        "1",
+        "4",
+        "3"
+      ],
+      "value_counts": {
+        "0": 217,
+        "2": 32,
+        "1": 26,
+        "4": 14,
+        "3": 14
+      },
+      "n_unique": 5,
+      "forbidden": false,
+      "required": false
+    },
+    "VHD": {
+      "dtype": "object",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Echo",
+      "type": "categorical",
+      "categories": [
+        "mild",
+        "N",
+        "Moderate",
+        "Severe"
+      ],
+      "value_counts": {
+        "mild": 149,
+        "N": 116,
+        "Moderate": 27,
+        "Severe": 11
+      },
+      "n_unique": 4,
+      "forbidden": false,
+      "required": false
+    },
+    "Cath": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Target",
+      "type": "binary",
+      "categories": [
+        "1",
+        "0"
+      ],
+      "value_counts": {
+        "1": 216,
+        "0": 87
+      },
+      "n_unique": 2,
+      "forbidden": true,
+      "target_for": "cad",
+      "required": false
+    },
+    "LAD": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Target",
+      "type": "binary",
+      "categories": [
+        "1",
+        "0"
+      ],
+      "value_counts": {
+        "1": 156,
+        "0": 147
+      },
+      "n_unique": 2,
+      "forbidden": true,
+      "target_for": "lad",
+      "required": false
+    },
+    "LCX": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Target",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 244,
+        "1": 59
+      },
+      "n_unique": 2,
+      "forbidden": true,
+      "target_for": "lcx",
+      "required": false
+    },
+    "RCA": {
+      "dtype": "int64",
+      "missing": 0,
+      "missing_pct": 0.0,
+      "group": "Target",
+      "type": "binary",
+      "categories": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 183,
+        "1": 120
+      },
+      "n_unique": 2,
+      "forbidden": true,
+      "target_for": "rca",
+      "required": false
+    }
+  },
+  "target_distributions": {
+    "cad": {
+      "1": 216,
+      "0": 87
+    },
+    "lad": {
+      "1": 156,
+      "0": 147
+    },
+    "lcx": {
+      "0": 244,
+      "1": 59
+    },
+    "rca": {
+      "0": 183,
+      "1": 120
+    }
+  },
+  "warnings": [],
+  "note": "No patient IDs in this dataset, so patient-level overlap between train and test cannot be verified. Stated in the documentation."
+}

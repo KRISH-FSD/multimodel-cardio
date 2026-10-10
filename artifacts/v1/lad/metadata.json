@@ -1,0 +1,284 @@
+{
+  "target": "lad",
+  "target_column": "LAD",
+  "model_type": "Random Forest",
+  "model_name": "random_forest",
+  "dataset_hash": "f2a743ff8692fc213e90611e140b07bc451f02068ab4a925a32535431dc3887d",
+  "seed": 42,
+  "library_versions": {
+    "python": "3.10.11",
+    "scikit-learn": "1.7.2",
+    "pandas": "2.3.3",
+    "numpy": "2.2.6",
+    "shap": "0.49.1",
+    "joblib": "1.5.3"
+  },
+  "git_sha": "unknown",
+  "timestamp": "2026-10-09T19:58:56.369149+00:00",
+  "threshold": 0.5,
+  "feature_list": [
+    "Age",
+    "Weight",
+    "Length",
+    "Sex",
+    "BMI",
+    "DM",
+    "HTN",
+    "Current Smoker",
+    "EX-Smoker",
+    "FH",
+    "Obesity",
+    "CRF",
+    "CVA",
+    "Airway disease",
+    "Thyroid Disease",
+    "CHF",
+    "DLP",
+    "BP",
+    "PR",
+    "Edema",
+    "Weak Peripheral Pulse",
+    "Lung rales",
+    "Systolic Murmur",
+    "Diastolic Murmur",
+    "Typical Chest Pain",
+    "Dyspnea",
+    "Function Class",
+    "Atypical",
+    "Nonanginal",
+    "Exertional CP",
+    "LowTH Ang",
+    "Q Wave",
+    "St Elevation",
+    "St Depression",
+    "Tinversion",
+    "LVH",
+    "Poor R Progression",
+    "BBB",
+    "FBS",
+    "CR",
+    "TG",
+    "LDL",
+    "HDL",
+    "BUN",
+    "ESR",
+    "HB",
+    "K",
+    "Na",
+    "WBC",
+    "Lymph",
+    "Neut",
+    "PLT",
+    "EF-TTE",
+    "Region RWMA",
+    "VHD"
+  ],
+  "n_features": 55,
+  "cv_results": {
+    "random_forest": {
+      "label": "Random Forest",
+      "mean_auc": 0.7804,
+      "std_auc": 0.0517,
+      "scores": [
+        0.785,
+        0.7167,
+        0.7791,
+        0.76,
+        0.8313,
+        0.83,
+        0.8667,
+        0.767,
+        0.7409,
+        0.7061,
+        0.78,
+        0.8367,
+        0.6783,
+        0.8191,
+        0.8087
+      ]
+    },
+    "svc": {
+      "label": "SVC (RBF, balanced)",
+      "mean_auc": 0.7653,
+      "std_auc": 0.0547,
+      "scores": [
+        0.7183,
+        0.7333,
+        0.7948,
+        0.7461,
+        0.7948,
+        0.7683,
+        0.835,
+        0.7704,
+        0.6887,
+        0.7496,
+        0.775,
+        0.8367,
+        0.633,
+        0.833,
+        0.8017
+      ]
+    },
+    "logistic": {
+      "label": "Logistic Regression (L2, balanced)",
+      "mean_auc": 0.733,
+      "std_auc": 0.0536,
+      "scores": [
+        0.72,
+        0.7417,
+        0.7322,
+        0.7565,
+        0.68,
+        0.7183,
+        0.8083,
+        0.8,
+        0.6557,
+        0.6922,
+        0.7533,
+        0.805,
+        0.6191,
+        0.727,
+        0.7861
+      ]
+    },
+    "gradient_boosting": {
+      "label": "Gradient Boosting",
+      "mean_auc": 0.7325,
+      "std_auc": 0.0723,
+      "scores": [
+        0.6983,
+        0.6983,
+        0.7113,
+        0.7704,
+        0.7252,
+        0.76,
+        0.8533,
+        0.7078,
+        0.6087,
+        0.6939,
+        0.7883,
+        0.7617,
+        0.5791,
+        0.8226,
+        0.8087
+      ]
+    },
+    "dummy": {
+      "label": "Dummy (Stratified)",
+      "mean_auc": 0.5056,
+      "std_auc": 0.0789,
+      "scores": [
+        0.6108,
+        0.4067,
+        0.4339,
+        0.5591,
+        0.4757,
+        0.6108,
+        0.4883,
+        0.4339,
+        0.5174,
+        0.6426,
+        0.5292,
+        0.3658,
+        0.4339,
+        0.5591,
+        0.5174
+      ]
+    }
+  },
+  "test_metrics": {
+    "roc_auc": 0.7011,
+    "roc_auc_bootstrap": {
+      "mean": 0.7021,
+      "ci_lower": 0.5578,
+      "ci_upper": 0.8265,
+      "ci_level": 0.95,
+      "n_bootstrap": 1000,
+      "note": "Intervals may be wide with only 61 test samples."
+    },
+    "average_precision": 0.6588,
+    "average_precision_bootstrap": {
+      "mean": 0.6752,
+      "ci_lower": 0.5041,
+      "ci_upper": 0.8364,
+      "ci_level": 0.95,
+      "n_bootstrap": 1000,
+      "note": "Intervals may be wide with only 61 test samples."
+    },
+    "f1": 0.7273,
+    "accuracy": 0.7049,
+    "brier_score": 0.216,
+    "brier_score_calibrated": 0.2123,
+    "confusion_matrix": [
+      [
+        19,
+        11
+      ],
+      [
+        7,
+        24
+      ]
+    ],
+    "classification_report": {
+      "0": {
+        "precision": 0.7307692307692307,
+        "recall": 0.6333333333333333,
+        "f1-score": 0.6785714285714286,
+        "support": 30.0
+      },
+      "1": {
+        "precision": 0.6857142857142857,
+        "recall": 0.7741935483870968,
+        "f1-score": 0.7272727272727273,
+        "support": 31.0
+      },
+      "accuracy": 0.7049180327868853,
+      "macro avg": {
+        "precision": 0.7082417582417582,
+        "recall": 0.703763440860215,
+        "f1-score": 0.702922077922078,
+        "support": 61.0
+      },
+      "weighted avg": {
+        "precision": 0.707872455413439,
+        "recall": 0.7049180327868853,
+        "f1-score": 0.7033212688950394,
+        "support": 61.0
+      }
+    }
+  },
+  "calibration": {
+    "method": "sigmoid",
+    "brier_before": 0.216,
+    "brier_after": 0.2123,
+    "reliability": {
+      "prob_true": [
+        0.0,
+        0.4444,
+        0.375,
+        0.75,
+        0.5833,
+        0.7273
+      ],
+      "prob_pred": [
+        0.2125,
+        0.3125,
+        0.4387,
+        0.5726,
+        0.6832,
+        0.7916
+      ]
+    }
+  },
+  "suspicious_features": [],
+  "n_train": 242,
+  "n_test": 61,
+  "class_balance_train": {
+    "1": 125,
+    "0": 117
+  },
+  "class_balance_test": {
+    "1": 31,
+    "0": 30
+  }
+}

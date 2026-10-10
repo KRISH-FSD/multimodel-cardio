@@ -1,0 +1,340 @@
+Target: cad
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.028640704313496756), ('Weight', -0.0286407043134967), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: lad
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.044544027310572686), ('Weight', -0.04454402731057268), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: lcx
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.013009672825585298), ('Weight', -0.013009672825585227), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: rca
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.04046734857198849), ('Weight', -0.0404673485719884), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: cad
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.028640704313496756), ('Weight', -0.0286407043134967), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: lad
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.044544027310572686), ('Weight', -0.04454402731057268), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: lcx
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.013009672825585298), ('Weight', -0.013009672825585227), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: rca
+transformed_names: 95
+shap_values len: 2 shape: (2,)
+source_shap keys: 55
+sorted_feats: [('Age', 0.04046734857198849), ('Weight', -0.0404673485719884), ('Length', 0.0), ('BMI', 0.0), ('BP', 0.0), ('PR', 0.0), ('FBS', 0.0), ('CR', 0.0), ('TG', 0.0), ('LDL', 0.0)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10506968494858848), ('HTN', 0.032704628646142014), ('EF-TTE', 0.029403056448097892), ('TG', 0.022933980776449505), ('FBS', -0.021840667533938287), ('ESR', -0.02010886079647175), ('Age', -0.019611165087538514), ('K', 0.01828307240890485), ('BP', -0.01476712090630439), ('DM', -0.013266113947093301)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.08568243583632901), ('Age', -0.04005420441495152), ('Nonanginal', -0.018809432132668093), ('TG', 0.016701114110990675), ('HTN', 0.01659280655711943), ('BP', -0.01573160021435531), ('BUN', -0.01516874589727177), ('EF-TTE', 0.01481134720699297), ('K', 0.014021120770442276), ('FBS', -0.012666808931128778)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Neut', -0.040307605948247616), ('Typical Chest Pain', -0.03658872548786462), ('Systolic Murmur', -0.030027472533899945), ('Lymph', -0.029589124203640738), ('WBC', -0.02212407365213196), ('FBS', -0.018625794410149613), ('Age', -0.01789405033116655), ('EF-TTE', -0.015351615967200484), ('LDL', -0.015345517747034592), ('PLT', 0.014495551262194657)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10185490493243236), ('HTN', 0.03768287219758265), ('TG', 0.035962972362622414), ('Age', -0.025996965191459224), ('ESR', -0.016290025859922553), ('LDL', -0.0141443340394775), ('BP', -0.013065827053160464), ('Tinversion', -0.012434406260133837), ('BUN', -0.01188815054749449), ('FBS', -0.011150937831960145)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10506968494858848), ('HTN', 0.032704628646142014), ('EF-TTE', 0.029403056448097892), ('TG', 0.022933980776449505), ('FBS', -0.021840667533938287), ('ESR', -0.02010886079647175), ('Age', -0.019611165087538514), ('K', 0.01828307240890485), ('BP', -0.01476712090630439), ('DM', -0.013266113947093301)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.08568243583632901), ('Age', -0.04005420441495152), ('Nonanginal', -0.018809432132668093), ('TG', 0.016701114110990675), ('HTN', 0.01659280655711943), ('BP', -0.01573160021435531), ('BUN', -0.01516874589727177), ('EF-TTE', 0.01481134720699297), ('K', 0.014021120770442276), ('FBS', -0.012666808931128778)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Neut', -0.040307605948247616), ('Typical Chest Pain', -0.03658872548786462), ('Systolic Murmur', -0.030027472533899945), ('Lymph', -0.029589124203640738), ('WBC', -0.02212407365213196), ('FBS', -0.018625794410149613), ('Age', -0.01789405033116655), ('EF-TTE', -0.015351615967200484), ('LDL', -0.015345517747034592), ('PLT', 0.014495551262194657)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10185490493243236), ('HTN', 0.03768287219758265), ('TG', 0.035962972362622414), ('Age', -0.025996965191459224), ('ESR', -0.016290025859922553), ('LDL', -0.0141443340394775), ('BP', -0.013065827053160464), ('Tinversion', -0.012434406260133837), ('BUN', -0.01188815054749449), ('FBS', -0.011150937831960145)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10506968494858848), ('HTN', 0.032704628646142014), ('EF-TTE', 0.029403056448097892), ('TG', 0.022933980776449505), ('FBS', -0.021840667533938287), ('ESR', -0.02010886079647175), ('Age', -0.019611165087538514), ('K', 0.01828307240890485), ('BP', -0.01476712090630439), ('DM', -0.013266113947093301)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.08568243583632901), ('Age', -0.04005420441495152), ('Nonanginal', -0.018809432132668093), ('TG', 0.016701114110990675), ('HTN', 0.01659280655711943), ('BP', -0.01573160021435531), ('BUN', -0.01516874589727177), ('EF-TTE', 0.01481134720699297), ('K', 0.014021120770442276), ('FBS', -0.012666808931128778)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Neut', -0.040307605948247616), ('Typical Chest Pain', -0.03658872548786462), ('Systolic Murmur', -0.030027472533899945), ('Lymph', -0.029589124203640738), ('WBC', -0.02212407365213196), ('FBS', -0.018625794410149613), ('Age', -0.01789405033116655), ('EF-TTE', -0.015351615967200484), ('LDL', -0.015345517747034592), ('PLT', 0.014495551262194657)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10185490493243236), ('HTN', 0.03768287219758265), ('TG', 0.035962972362622414), ('Age', -0.025996965191459224), ('ESR', -0.016290025859922553), ('LDL', -0.0141443340394775), ('BP', -0.013065827053160464), ('Tinversion', -0.012434406260133837), ('BUN', -0.01188815054749449), ('FBS', -0.011150937831960145)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10506968494858848), ('HTN', 0.032704628646142014), ('EF-TTE', 0.029403056448097892), ('TG', 0.022933980776449505), ('FBS', -0.021840667533938287), ('ESR', -0.02010886079647175), ('Age', -0.019611165087538514), ('K', 0.01828307240890485), ('BP', -0.01476712090630439), ('DM', -0.013266113947093301)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.08568243583632901), ('Age', -0.04005420441495152), ('Nonanginal', -0.018809432132668093), ('TG', 0.016701114110990675), ('HTN', 0.01659280655711943), ('BP', -0.01573160021435531), ('BUN', -0.01516874589727177), ('EF-TTE', 0.01481134720699297), ('K', 0.014021120770442276), ('FBS', -0.012666808931128778)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Neut', -0.040307605948247616), ('Typical Chest Pain', -0.03658872548786462), ('Systolic Murmur', -0.030027472533899945), ('Lymph', -0.029589124203640738), ('WBC', -0.02212407365213196), ('FBS', -0.018625794410149613), ('Age', -0.01789405033116655), ('EF-TTE', -0.015351615967200484), ('LDL', -0.015345517747034592), ('PLT', 0.014495551262194657)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10185490493243236), ('HTN', 0.03768287219758265), ('TG', 0.035962972362622414), ('Age', -0.025996965191459224), ('ESR', -0.016290025859922553), ('LDL', -0.0141443340394775), ('BP', -0.013065827053160464), ('Tinversion', -0.012434406260133837), ('BUN', -0.01188815054749449), ('FBS', -0.011150937831960145)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.12170640518154313), ('EF-TTE', -0.029495961710986937), ('Age', -0.0286407043134967), ('HTN', -0.02505630708281767), ('FBS', -0.02468634762449239), ('ESR', -0.017769891354982265), ('DM', -0.01737194098131148), ('Na', 0.014447875071499586), ('BMI', 0.013305915713120935), ('Region RWMA', -0.011700531258351072)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.11492237147192735), ('Age', -0.04454402731057268), ('EF-TTE', -0.02421440799278485), ('FBS', -0.02054376269098981), ('BMI', 0.020034226606163642), ('HTN', -0.017235383905664738), ('Nonanginal', -0.016679113723627795), ('Atypical', -0.01419378548712118), ('LVH', 0.01395652439724974), ('ESR', -0.011264398815333677)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.04296379751093367), ('FBS', -0.03487158504734829), ('Systolic Murmur', -0.025390993928676442), ('Neut', -0.02473315096205039), ('EF-TTE', -0.018881759526483025), ('Weight', -0.013541325509142348), ('Age', -0.013009672825585227), ('PLT', -0.01213273597356492), ('Tinversion', -0.011639853168376336), ('Atypical', -0.01142010746000505)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10650631989297504), ('HTN', -0.05191856204680528), ('Age', -0.0404673485719884), ('EF-TTE', -0.02005466346220164), ('ESR', -0.013359254347859898), ('BMI', -0.012545603580246971), ('VHD', -0.012462120742290866), ('HDL', -0.012187624044601837), ('TG', -0.01202165498194933), ('Tinversion', -0.010244763885370892)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10506968494858848), ('HTN', 0.032704628646142014), ('EF-TTE', 0.029403056448097892), ('TG', 0.022933980776449505), ('FBS', -0.021840667533938287), ('ESR', -0.02010886079647175), ('Age', -0.019611165087538514), ('K', 0.01828307240890485), ('BP', -0.01476712090630439), ('DM', -0.013266113947093301)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.08568243583632901), ('Age', -0.04005420441495152), ('Nonanginal', -0.018809432132668093), ('TG', 0.016701114110990675), ('HTN', 0.01659280655711943), ('BP', -0.01573160021435531), ('BUN', -0.01516874589727177), ('EF-TTE', 0.01481134720699297), ('K', 0.014021120770442276), ('FBS', -0.012666808931128778)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Neut', -0.040307605948247616), ('Typical Chest Pain', -0.03658872548786462), ('Systolic Murmur', -0.030027472533899945), ('Lymph', -0.029589124203640738), ('WBC', -0.02212407365213196), ('FBS', -0.018625794410149613), ('Age', -0.01789405033116655), ('EF-TTE', -0.015351615967200484), ('LDL', -0.015345517747034592), ('PLT', 0.014495551262194657)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10185490493243236), ('HTN', 0.03768287219758265), ('TG', 0.035962972362622414), ('Age', -0.025996965191459224), ('ESR', -0.016290025859922553), ('LDL', -0.0141443340394775), ('BP', -0.013065827053160464), ('Tinversion', -0.012434406260133837), ('BUN', -0.01188815054749449), ('FBS', -0.011150937831960145)]
+Target: cad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10506968494858848), ('HTN', 0.032704628646142014), ('EF-TTE', 0.029403056448097892), ('TG', 0.022933980776449505), ('FBS', -0.021840667533938287), ('ESR', -0.02010886079647175), ('Age', -0.019611165087538514), ('K', 0.01828307240890485), ('BP', -0.01476712090630439), ('DM', -0.013266113947093301)]
+Target: lad
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.08568243583632901), ('Age', -0.04005420441495152), ('Nonanginal', -0.018809432132668093), ('TG', 0.016701114110990675), ('HTN', 0.01659280655711943), ('BP', -0.01573160021435531), ('BUN', -0.01516874589727177), ('EF-TTE', 0.01481134720699297), ('K', 0.014021120770442276), ('FBS', -0.012666808931128778)]
+Target: lcx
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Neut', -0.040307605948247616), ('Typical Chest Pain', -0.03658872548786462), ('Systolic Murmur', -0.030027472533899945), ('Lymph', -0.029589124203640738), ('WBC', -0.02212407365213196), ('FBS', -0.018625794410149613), ('Age', -0.01789405033116655), ('EF-TTE', -0.015351615967200484), ('LDL', -0.015345517747034592), ('PLT', 0.014495551262194657)]
+Target: rca
+transformed_names: 95
+shap_values len: 95 shape: (95,)
+source_shap keys: 55
+sorted_feats: [('Typical Chest Pain', -0.10185490493243236), ('HTN', 0.03768287219758265), ('TG', 0.035962972362622414), ('Age', -0.025996965191459224), ('ESR', -0.016290025859922553), ('LDL', -0.0141443340394775), ('BP', -0.013065827053160464), ('Tinversion', -0.012434406260133837), ('BUN', -0.01188815054749449), ('FBS', -0.011150937831960145)]

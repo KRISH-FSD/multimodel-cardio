@@ -12,6 +12,7 @@ describe('usePatientStore', () => {
     expect(state.prediction).toBeNull();
     expect(state.isLoading).toBe(false);
     expect(state.error).toBeNull();
+    expect(state.selectedModel).toBe('existing');
   });
 
   it('should set patient data correctly', () => {
@@ -29,5 +30,29 @@ describe('usePatientStore', () => {
     const state = usePatientStore.getState();
     expect(state.error).toBe('Network Error');
     expect(state.isLoading).toBe(false); // Should reset loading when error is set
+  });
+
+  it('should toggle selected model without affecting other state', () => {
+    // Set some patient data and prediction first
+    usePatientStore.getState().setPatientData({ Age: 55, Sex: 1 });
+
+    // Switch model
+    usePatientStore.getState().setSelectedModel('glb');
+    let state = usePatientStore.getState();
+    expect(state.selectedModel).toBe('glb');
+    expect(state.patient.Age).toBe(55); // Patient data preserved
+    expect(state.patient.Sex).toBe(1);
+
+    // Switch back
+    usePatientStore.getState().setSelectedModel('existing');
+    state = usePatientStore.getState();
+    expect(state.selectedModel).toBe('existing');
+    expect(state.patient.Age).toBe(55); // Still preserved
+  });
+
+  it('should reset selectedModel on full reset', () => {
+    usePatientStore.getState().setSelectedModel('glb');
+    usePatientStore.getState().reset();
+    expect(usePatientStore.getState().selectedModel).toBe('existing');
   });
 });
