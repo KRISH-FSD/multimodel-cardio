@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist Sans", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Modern Glassmorphism Theme */
+  --color-ink: #030712;
+  --color-surface: rgba(15, 23, 42, 0.45);
+  --color-hairline: rgba(148, 163, 184, 0.15);
+  --color-text: #f8fafc;
+  --color-muted: #94a3b8;
+  --color-focus: #3b82f6;
+
+  /* The blue-to-amber-to-magenta ramp is reserved for probability. */
+  --color-ramp-low: #38bdf8;
+  --color-ramp-mid: #fbbf24;
+  --color-ramp-high: #f43f5e;
+}
+
+/* Base styles for the modern glassmorphism theme */
+@layer base {
+  :root {
+    --background: var(--color-ink);
+    --foreground: var(--color-text);
+    --card: var(--color-surface);
+    --card-foreground: var(--color-text);
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-text);
+    --primary: var(--color-focus);
+    --primary-foreground: #ffffff;
+    --secondary: rgba(30, 41, 59, 0.6);
+    --secondary-foreground: var(--color-text);
+    --muted: rgba(30, 41, 59, 0.4);
+    --muted-foreground: var(--color-muted);
+    --accent: rgba(59, 130, 246, 0.1);
+    --accent-foreground: var(--color-text);
+    --destructive: var(--color-ramp-high);
+    --destructive-foreground: #ffffff;
+    --border: var(--color-hairline);
+    --input: var(--color-hairline);
+    --ring: var(--color-focus);
+    --radius: 0.75rem; /* Rounded corners for modern feel */
+  }
+
+  * {
+    border-color: var(--border);
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Subtle radial gradients for background depth */
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(244, 63, 94, 0.05), transparent 25%);
+    background-attachment: fixed;
+    color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: var(--color-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-hairline);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius);
+  }
+  
+  .glass-panel-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .glass-panel-hover:hover {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  }
+  
+  .text-glow-high {
+    text-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+  }
+}
