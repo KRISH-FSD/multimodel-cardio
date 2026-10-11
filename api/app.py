@@ -321,10 +321,8 @@ async def predict(patient: PatientInput):
                 sv = explainer.shap_values(transformed)
                 if isinstance(sv, list):
                     sv = sv[1]
-                if isinstance(explainer.expected_value, (list, np.ndarray)):
-                    base_val = float(explainer.expected_value[1] if len(explainer.expected_value) > 1 else explainer.expected_value[0])
-                else:
-                    base_val = float(explainer.expected_value)
+                exp_arr = np.asarray(explainer.expected_value).ravel()
+                base_val = float(exp_arr[1] if len(exp_arr) > 1 else exp_arr[0])
             else:
                 # Use predict_proba as the model function
                 explainer = shap.KernelExplainer(
@@ -334,10 +332,8 @@ async def predict(patient: PatientInput):
                 sv = explainer.shap_values(transformed, nsamples=50)
                 if isinstance(sv, list):
                     sv = sv[1]
-                if isinstance(explainer.expected_value, (list, np.ndarray)):
-                    base_val = float(explainer.expected_value[1] if len(explainer.expected_value) > 1 else explainer.expected_value[0])
-                else:
-                    base_val = float(explainer.expected_value)
+                exp_arr = np.asarray(explainer.expected_value).ravel()
+                base_val = float(exp_arr[1] if len(exp_arr) > 1 else exp_arr[0])
             # shap_values could be a list of arrays (class 0, class 1), or an array of shape (n_samples, n_features, n_classes)
             if isinstance(sv, list):
                 # Older SHAP version returns list

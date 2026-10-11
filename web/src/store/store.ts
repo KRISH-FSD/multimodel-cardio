@@ -15,6 +15,7 @@ interface PatientState {
   selectedModel: HeartModel
   focusedVessel: ArteryId | null
   activeResultTab: 'assessment' | 'guide'
+  isFormCollapsed: boolean
   setPatientData: (data: Partial<PatientData>) => void
   setPrediction: (prediction: PredictionResponse | null) => void
   setLoading: (loading: boolean) => void
@@ -22,6 +23,8 @@ interface PatientState {
   setSelectedModel: (model: HeartModel) => void
   setFocusedVessel: (vessel: ArteryId | null) => void
   setActiveResultTab: (tab: 'assessment' | 'guide') => void
+  setIsFormCollapsed: (collapsed: boolean) => void
+  toggleFormCollapsed: () => void
   reset: () => void
 }
 
@@ -33,6 +36,7 @@ export const usePatientStore = create<PatientState>((set) => ({
   selectedModel: 'glb',
   focusedVessel: null,
   activeResultTab: 'assessment',
+  isFormCollapsed: false,
   setPatientData: (data) => set((state) => ({ patient: { ...state.patient, ...data } })),
   setPrediction: (prediction) => set({ prediction, error: null }),
   setLoading: (isLoading) => set({ isLoading }),
@@ -40,6 +44,8 @@ export const usePatientStore = create<PatientState>((set) => ({
   setSelectedModel: (selectedModel) => set({ selectedModel }),
   setFocusedVessel: (focusedVessel) => set({ focusedVessel }),
   setActiveResultTab: (activeResultTab) => set({ activeResultTab }),
+  setIsFormCollapsed: (isFormCollapsed) => set({ isFormCollapsed }),
+  toggleFormCollapsed: () => set((state) => ({ isFormCollapsed: !state.isFormCollapsed })),
   reset: () =>
     set({
       patient: {},
