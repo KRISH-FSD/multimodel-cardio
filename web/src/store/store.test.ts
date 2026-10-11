@@ -12,7 +12,7 @@ describe('usePatientStore', () => {
     expect(state.prediction).toBeNull();
     expect(state.isLoading).toBe(false);
     expect(state.error).toBeNull();
-    expect(state.selectedModel).toBe('existing');
+    expect(state.selectedModel).toBe('glb');
   });
 
   it('should set patient data correctly', () => {
@@ -36,23 +36,23 @@ describe('usePatientStore', () => {
     // Set some patient data and prediction first
     usePatientStore.getState().setPatientData({ Age: 55, Sex: 1 });
 
-    // Switch model
-    usePatientStore.getState().setSelectedModel('glb');
+    // Switch model to existing
+    usePatientStore.getState().setSelectedModel('existing');
     let state = usePatientStore.getState();
-    expect(state.selectedModel).toBe('glb');
+    expect(state.selectedModel).toBe('existing');
     expect(state.patient.Age).toBe(55); // Patient data preserved
     expect(state.patient.Sex).toBe(1);
 
-    // Switch back
-    usePatientStore.getState().setSelectedModel('existing');
+    // Switch back to glb
+    usePatientStore.getState().setSelectedModel('glb');
     state = usePatientStore.getState();
-    expect(state.selectedModel).toBe('existing');
+    expect(state.selectedModel).toBe('glb');
     expect(state.patient.Age).toBe(55); // Still preserved
   });
 
   it('should reset selectedModel on full reset', () => {
-    usePatientStore.getState().setSelectedModel('glb');
+    usePatientStore.getState().setSelectedModel('existing');
     usePatientStore.getState().reset();
-    expect(usePatientStore.getState().selectedModel).toBe('existing');
+    expect(usePatientStore.getState().selectedModel).toBe('glb');
   });
 });

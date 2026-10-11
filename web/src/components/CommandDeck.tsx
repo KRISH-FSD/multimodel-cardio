@@ -1,18 +1,19 @@
 import { useRef, Suspense, useEffect, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Html } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import { usePatientStore } from '../store/store';
 import type { HeartModel } from '../store/store';
 import {
   RotateCcw,
-  Layers,
-  BookOpen,
   Network,
   Box,
   MousePointerClick,
   RotateCw,
   ZoomIn,
+  ZoomOut,
+  Eye,
+  EyeOff,
   Activity,
 } from 'lucide-react';
 
@@ -364,7 +365,7 @@ function DynamicScreenTracker({
   return null;
 }
 
-// ─── Existing Heart Scene (Coronary Model Fallback) ───────────────────────
+// ─── Existing Heart Scene (Coronary 3D Model: Real Segmented Arteries) ───
 function ExistingHeartScene({
   isRotating,
   targetRotationY,
@@ -374,9 +375,31 @@ function ExistingHeartScene({
   targetRotationY: number | null;
   isVisible?: boolean;
 }) {
-  const { prediction } = usePatientStore();
   const heartGroupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF('/heart0088_coronary_arteries.glb');
+
+  // Clone scene and apply rich physical arterial material
+  const clonedScene = useMemo(() => {
+    const cloned = scene.clone(true);
+    const arteryMaterial = new THREE.MeshPhysicalMaterial({
+      color: '#dc2626',
+      roughness: 0.28,
+      metalness: 0.1,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.2,
+      emissive: '#881337',
+      emissiveIntensity: 0.22,
+      side: THREE.DoubleSide,
+    });
+    cloned.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        (child as THREE.Mesh).material = arteryMaterial;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    return cloned;
+  }, [scene]);
 
   useFrame((state, delta) => {
     if (heartGroupRef.current) {
@@ -392,104 +415,22 @@ function ExistingHeartScene({
       } else if (isRotating) {
         heartGroupRef.current.rotation.y += delta * 0.25;
       }
-      const beat = Math.sin(state.clock.elapsedTime * 4) * 0.015;
+      const beat = Math.sin(state.clock.elapsedTime * 4) * 0.012;
       heartGroupRef.current.scale.setScalar(1 + beat);
     }
   });
 
   if (!isVisible) return null;
 
-  const ladPath = [
-    new THREE.Vector3(0, 1.2, 1.1),
-    new THREE.Vector3(-0.4, 0.7, 1.4),
-    new THREE.Vector3(-0.8, 0, 1.3),
-    new THREE.Vector3(-0.6, -1.2, 0.7),
-  ];
-  const lcxPath = [
-    new THREE.Vector3(0, 1.2, 1.1),
-    new THREE.Vector3(0.9, 0.9, 1.1),
-    new THREE.Vector3(1.4, 0.2, 0.6),
-    new THREE.Vector3(1.3, -0.8, -0.3),
-  ];
-  const rcaPath = [
-    new THREE.Vector3(0.3, 1.2, -0.5),
-    new THREE.Vector3(1.1, 0.6, -0.9),
-    new THREE.Vector3(0.9, -0.4, -1.3),
-    new THREE.Vector3(0.1, -1.2, -1.0),
-  ];
-
   return (
     <group ref={heartGroupRef}>
-      <group scale={0.03} position={[0, 0, 0]}>
-        <primitive object={scene} />
-      </group>
-
-      <VesselTube
-        path={ladPath}
-        name="LAD"
-        color="#ef4444"
-        probability={prediction?.predictions?.lad?.probability ?? 0.378}
-        isVisible={isVisible}
-      />
-      <VesselTube
-        path={lcxPath}
-        name="LCX"
-        color="#0d9488"
-        probability={prediction?.predictions?.lcx?.probability ?? 0.186}
-        isVisible={isVisible}
-      />
-      <VesselTube
-        path={rcaPath}
-        name="RCA"
-        color="#3b82f6"
-        probability={prediction?.predictions?.rca?.probability ?? 0.353}
-        isVisible={isVisible}
-      />
+      <Center scale={0.03} position={[0, 0, 0]}>
+        <primitive object={clonedScene} />
+      </Center>
     </group>
   );
 }
 
-function VesselTube({
-  path,
-  color,
-  name,
-  probability,
-  isVisible = true,
-}: {
-  path: THREE.Vector3[];
-  color: string;
-  name: string;
-  probability?: number;
-  isVisible?: boolean;
-}) {
-  const curve = new THREE.CatmullRomCurve3(path);
-
-  if (!isVisible) return null;
-
-  return (
-    <group>
-      <mesh>
-        <tubeGeometry args={[curve, 128, 0.07, 16, false]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={0.6}
-          roughness={0.2}
-          metalness={0.5}
-        />
-      </mesh>
-      <Html
-        position={path[Math.floor(path.length / 2)]}
-        center
-        className="pointer-events-none select-none"
-      >
-        <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-md border border-slate-200 text-slate-800">
-          {name} {probability !== undefined ? `(${(probability * 100).toFixed(1)}%)` : ''}
-        </div>
-      </Html>
-    </group>
-  );
-}
 
 // ─── Anatomical Heart 3D Model Scene ──────────────────────────────────────
 function AnatomicalHeartScene({
@@ -636,21 +577,71 @@ function SceneLighting() {
 }
 
 // ─── Camera Controller ─────────────────────────────────────────────────
-function CameraController({ selectedModel }: { selectedModel: HeartModel }) {
+function CameraController({
+  selectedModel,
+  zoomAction,
+  resetTrigger,
+  controlsRef,
+}: {
+  selectedModel: HeartModel;
+  zoomAction: number;
+  resetTrigger: number;
+  controlsRef: React.RefObject<any>;
+}) {
   const { camera } = useThree();
   const prevModel = useRef(selectedModel);
+  const prevZoom = useRef(zoomAction);
+  const prevReset = useRef(resetTrigger);
 
   useEffect(() => {
     if (prevModel.current !== selectedModel) {
       if (selectedModel === 'glb') {
         camera.position.set(0, -0.2, 9.8);
       } else {
-        camera.position.set(0, 0, 4.5);
+        camera.position.set(0, 0, 8.5);
       }
       camera.lookAt(0, -0.2, 0);
+      if (controlsRef.current) {
+        controlsRef.current.target.set(0, -0.2, 0);
+        controlsRef.current.update();
+      }
       prevModel.current = selectedModel;
     }
-  }, [selectedModel, camera]);
+  }, [selectedModel, camera, controlsRef]);
+
+  // Handle zoom in/out smoothly along current view vector
+  useEffect(() => {
+    if (zoomAction !== prevZoom.current) {
+      const isZoomIn = zoomAction > prevZoom.current;
+      const factor = isZoomIn ? 0.82 : 1.22;
+      const target = controlsRef.current?.target || new THREE.Vector3(0, -0.2, 0);
+      const offset = camera.position.clone().sub(target);
+      const newDist = THREE.MathUtils.clamp(offset.length() * factor, 3.2, 16);
+      offset.setLength(newDist);
+      camera.position.copy(target).add(offset);
+      if (controlsRef.current) {
+        controlsRef.current.update();
+      }
+      prevZoom.current = zoomAction;
+    }
+  }, [zoomAction, camera, controlsRef]);
+
+  // Handle camera reset
+  useEffect(() => {
+    if (resetTrigger !== prevReset.current) {
+      if (selectedModel === 'glb') {
+        camera.position.set(0, -0.2, 9.8);
+      } else {
+        camera.position.set(0, 0, 8.5);
+      }
+      camera.lookAt(0, -0.2, 0);
+      if (controlsRef.current) {
+        controlsRef.current.target.set(0, -0.2, 0);
+        controlsRef.current.update();
+      }
+      prevReset.current = resetTrigger;
+    }
+  }, [resetTrigger, selectedModel, camera, controlsRef]);
 
   return null;
 }
@@ -661,6 +652,11 @@ export function CommandDeck() {
   const [isRotating, setIsRotating] = useState(false);
   const [targetRotationY, setTargetRotationY] = useState<number | null>(null);
   const [selectedVessel, setSelectedVessel] = useState<string | null>(null);
+  const [showCards, setShowCards] = useState(true);
+  const [zoomAction, setZoomAction] = useState(0);
+  const [resetTrigger, setResetTrigger] = useState(0);
+
+  const controlsRef = useRef<any>(null);
 
   // References for dynamic 2D/3D synchronization
   const containerRef = useRef<HTMLDivElement>(null);
@@ -737,7 +733,11 @@ export function CommandDeck() {
     setTargetRotationY(0);
     setSelectedVessel(null);
     setIsRotating(false);
+    setResetTrigger((prev) => prev + 1);
   };
+
+  const handleZoomIn = () => setZoomAction((prev) => prev + 1);
+  const handleZoomOut = () => setZoomAction((prev) => prev - 1);
 
   const getProbNumber = (id: 'lad' | 'lcx' | 'rca'): number => {
     const raw = prediction?.predictions?.[id]?.probability;
@@ -763,43 +763,32 @@ export function CommandDeck() {
       ref={containerRef}
       className="w-full h-full relative bg-gradient-to-b from-slate-50/50 to-white rounded-2xl overflow-hidden flex flex-col select-none"
     >
-      {/* ── Top Bar: Segmented Tabs & Action Icons ── */}
+      {/* ── Top Bar: Segmented Model Selector & Action Toolbar ── */}
       <div className="absolute top-3.5 left-4 right-4 z-30 flex items-center justify-between gap-3 pointer-events-none">
-        {/* Segmented Control Pill */}
+        {/* Model Selector Segmented Pill (Clean 2-way toggle, unified teal active styling) */}
         <div className="bg-slate-100/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-1 pointer-events-auto">
           <button
             type="button"
+            id="tab-coronary-model"
             onClick={() => setSelectedModel('existing')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
               selectedModel === 'existing'
-                ? 'bg-white text-slate-800 shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#0f766e] text-white shadow-xs font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium'
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-            <span className="hidden md:inline">Coronary Topography</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setSelectedModel('existing')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-              selectedModel === 'existing'
-                ? 'bg-white text-slate-800 shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Network className="w-3.5 h-3.5 text-slate-500" />
+            <Network className="w-3.5 h-3.5" />
             <span>Coronary Model</span>
           </button>
 
           <button
             type="button"
+            id="tab-anatomical-model"
             onClick={() => setSelectedModel('glb')}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
               selectedModel === 'glb'
                 ? 'bg-[#0f766e] text-white shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium'
             }`}
           >
             <Box className="w-3.5 h-3.5" />
@@ -807,33 +796,71 @@ export function CommandDeck() {
           </button>
         </div>
 
-        {/* Top-Right Floating Tool Icons */}
-        <div className="flex flex-col gap-1.5 bg-white/90 backdrop-blur-md border border-slate-200/80 p-1 rounded-xl shadow-xs pointer-events-auto">
+        {/* Top-Right Quick Action Toolbar */}
+        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-md border border-slate-200/80 p-1 rounded-xl shadow-xs pointer-events-auto">
           <button
             type="button"
+            id="btn-zoom-in"
+            onClick={handleZoomIn}
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Zoom In"
+          >
+            <ZoomIn className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            id="btn-zoom-out"
+            onClick={handleZoomOut}
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-4 h-4" />
+          </button>
+
+          <div className="w-[1px] h-4 bg-slate-200 mx-0.5" />
+
+          {selectedModel === 'glb' && (
+            <button
+              type="button"
+              id="btn-toggle-cards"
+              onClick={() => setShowCards(!showCards)}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                showCards
+                  ? 'text-teal-700 bg-teal-50 hover:bg-teal-100 font-medium'
+                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+              }`}
+              title={showCards ? 'Hide Vessel Cards' : 'Show Vessel Cards'}
+            >
+              {showCards ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </button>
+          )}
+
+          <button
+            type="button"
+            id="btn-reset-camera"
             onClick={resetCamera}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
             title="Reset Camera & Center View"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
+
           <button
             type="button"
+            id="btn-auto-rotate"
             onClick={() => {
               setIsRotating(!isRotating);
               if (targetRotationY !== null) setTargetRotationY(null);
             }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              isRotating
+                ? 'text-teal-700 bg-teal-50 hover:bg-teal-100'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
             title={isRotating ? 'Pause Rotation' : 'Auto Rotate'}
           >
             <RotateCw className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-            title="Layers & Vessels"
-          >
-            <Layers className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -853,7 +880,12 @@ export function CommandDeck() {
             gl={{ antialias: true, alpha: true }}
           >
             <SceneLighting />
-            <CameraController selectedModel={selectedModel} />
+            <CameraController
+              selectedModel={selectedModel}
+              zoomAction={zoomAction}
+              resetTrigger={resetTrigger}
+              controlsRef={controlsRef}
+            />
 
             <group visible={selectedModel === 'existing'}>
               <ExistingHeartScene
@@ -884,9 +916,10 @@ export function CommandDeck() {
             </group>
 
             <OrbitControls
+              ref={controlsRef}
               enablePan={true}
               minDistance={3.0}
-              maxDistance={15}
+              maxDistance={16}
               enableDamping={true}
               dampingFactor={0.05}
               onStart={() => {
@@ -900,8 +933,8 @@ export function CommandDeck() {
 
       {/* ── Dynamic SVG Leader Lines & Arrow Markers Overlay ── */}
       <svg
-        className={`absolute inset-0 w-full h-full pointer-events-none z-20 ${
-          selectedModel === 'glb' ? 'block' : 'hidden'
+        className={`absolute inset-0 w-full h-full pointer-events-none z-20 transition-opacity duration-200 ${
+          selectedModel === 'glb' && showCards ? 'block' : 'hidden'
         }`}
       >
         <defs>
@@ -966,7 +999,7 @@ export function CommandDeck() {
       </svg>
 
       {/* ── Apple-Inspired Artery Callout Cards (Docked HUD Overlay) ── */}
-      {selectedModel === 'glb' && (
+      {selectedModel === 'glb' && showCards && (
         <div className="absolute inset-0 pointer-events-none z-20">
           {ARTERY_DATA.map((artery) => {
             const probNum = getProbNumber(artery.id);
