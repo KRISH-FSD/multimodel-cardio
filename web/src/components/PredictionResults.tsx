@@ -5,10 +5,14 @@ export function PredictionResults() {
   const { prediction, error, isLoading } = usePatientStore();
 
   if (error) {
+    const errorText = typeof error === 'string' ? error : JSON.stringify(error);
     return (
-      <div className="bg-destructive/10 border border-destructive text-destructive p-4 rounded text-sm">
-        <AlertCircle className="w-4 h-4 mb-2 inline-block mr-2" />
-        {error}
+      <div className="bg-destructive/15 border border-destructive/40 text-rose-300 p-4 rounded-xl text-xs font-mono flex items-start gap-2.5 shadow-lg">
+        <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+        <div className="flex flex-col gap-1">
+          <span className="font-bold uppercase tracking-wider text-rose-400">Analysis Error</span>
+          <span className="text-white/80 leading-relaxed">{errorText}</span>
+        </div>
       </div>
     );
   }

@@ -27,8 +27,8 @@ class PatientInput(BaseModel):
     BMI: Optional[float] = Field(None, ge=10, le=60, description="Body Mass Index")
 
     # Vitals
-    BP: float = Field(..., ge=60, le=250, description="Blood Pressure (mmHg)")
-    PR: float = Field(..., ge=30, le=220, description="Pulse Rate (bpm)")
+    BP: Optional[float] = Field(None, ge=60, le=250, description="Blood Pressure (mmHg)")
+    PR: Optional[float] = Field(None, ge=30, le=220, description="Pulse Rate (bpm)")
     Systolic_Murmur: Optional[int] = Field(None, ge=0, le=1, alias="Systolic Murmur")
     Diastolic_Murmur: Optional[int] = Field(None, ge=0, le=1, alias="Diastolic Murmur")
     Dyspnea: Optional[int] = Field(None, ge=0, le=1)
@@ -39,17 +39,17 @@ class PatientInput(BaseModel):
     Typical_Chest_Pain: Optional[int] = Field(None, ge=0, le=1, alias="Typical Chest Pain")
 
     # Labs
-    FBS: float = Field(..., ge=50, le=500, description="Fasting Blood Sugar (mg/dL)")
-    CR: float = Field(..., ge=0.1, le=15, description="Creatinine (mg/dL)")
-    TG: float = Field(..., ge=20, le=1000, description="Triglycerides (mg/dL)")
-    LDL: float = Field(..., ge=10, le=400, description="LDL Cholesterol (mg/dL)")
-    HDL: float = Field(..., ge=10, le=150, description="HDL Cholesterol (mg/dL)")
+    FBS: Optional[float] = Field(None, ge=50, le=500, description="Fasting Blood Sugar (mg/dL)")
+    CR: Optional[float] = Field(None, ge=0.1, le=15, description="Creatinine (mg/dL)")
+    TG: Optional[float] = Field(None, ge=20, le=1000, description="Triglycerides (mg/dL)")
+    LDL: Optional[float] = Field(None, ge=10, le=400, description="LDL Cholesterol (mg/dL)")
+    HDL: Optional[float] = Field(None, ge=10, le=150, description="HDL Cholesterol (mg/dL)")
     BUN: Optional[float] = Field(None, ge=1, le=100, description="Blood Urea Nitrogen")
     ESR: Optional[float] = Field(None, ge=0, le=150, description="Erythrocyte Sedimentation Rate")
-    HB: float = Field(..., ge=5, le=25, description="Hemoglobin (g/dL)")
-    K: float = Field(..., ge=2, le=8, description="Potassium (mEq/L)")
-    Na: float = Field(..., ge=120, le=160, description="Sodium (mEq/L)")
-    WBC: float = Field(..., ge=1000, le=30000, description="White Blood Cell Count")
+    HB: Optional[float] = Field(None, ge=5, le=25, description="Hemoglobin (g/dL)")
+    K: Optional[float] = Field(None, ge=2, le=8, description="Potassium (mEq/L)")
+    Na: Optional[float] = Field(None, ge=120, le=160, description="Sodium (mEq/L)")
+    WBC: Optional[float] = Field(None, ge=1000, le=30000, description="White Blood Cell Count")
     Lymph: Optional[float] = Field(None, ge=0, le=100, description="Lymphocyte %")
     Neut: Optional[float] = Field(None, ge=0, le=100, description="Neutrophil %")
     PLT: Optional[float] = Field(None, ge=50, le=800, description="Platelet Count (×10³/μL)")
@@ -57,13 +57,13 @@ class PatientInput(BaseModel):
     # ECG
     Q_Wave: Optional[int] = Field(None, ge=0, le=1, alias="Q Wave")
     St_Elevation: Optional[int] = Field(None, ge=0, le=1, alias="St Elevation")
-    St_Depression: Optional[int] = Field(None, ge=0, le=1, alias="St Depression")
-    T_inversion: Optional[int] = Field(None, ge=0, le=1, alias="T inversion")
+    St_Depression: Optional[int] = Field(None, ge=0, le=5, alias="St Depression")
+    T_inversion: Optional[int] = Field(None, ge=0, le=5, alias="T inversion")
     LVH: Optional[int] = Field(None, ge=0, le=1)
     Poor_R_Progression: Optional[int] = Field(None, ge=0, le=1, alias="Poor R Progression")
 
     # Echo
-    EF_TTE: float = Field(..., ge=10, le=80, alias="EF-TTE", description="Ejection Fraction (%)")
+    EF_TTE: Optional[float] = Field(None, ge=10, le=80, alias="EF-TTE", description="Ejection Fraction (%)")
     Region_RWMA: Optional[int] = Field(None, ge=0, le=4, alias="Region RWMA")
     VHD: Optional[str] = Field(None, description="Valvular Heart Disease")
 

@@ -28,22 +28,58 @@ export function PatientForm() {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handlePredict = async () => {
-    // We removed the < 54 check because the backend handles imputation for missing fields!
     if (Object.keys(patient).length === 0) {
-      setError("Please enter some patient data first.");
+      setError("Please enter patient clinical data or select a profile.");
       return;
     }
     
     setLoading(true);
     setError(null);
     
+    // Provide dataset baseline defaults for any unpopulated fields to ensure robust prediction
+    const baselineDefaults = {
+      Age: 55,
+      Sex: 1,
+      BMI: 26.5,
+      BP: 120,
+      PR: 75,
+      FBS: 95,
+      CR: 0.8,
+      TG: 150,
+      LDL: 110,
+      HDL: 45,
+      HB: 14.5,
+      K: 4.4,
+      Na: 140,
+      WBC: 6500,
+      'EF-TTE': 55,
+      'St Depression': 0,
+      'T inversion': 0,
+    };
+
+    const payload = {
+      ...baselineDefaults,
+      ...patient,
+    };
+    
     try {
       const { data, error } = await apiClient.POST("/api/predict", {
-        body: patient as any
+        body: payload as any
       });
       
       if (error) {
-        setError(String(error));
+        let msg = "Validation Error";
+        if (typeof error === 'string') {
+          msg = error;
+        } else if ((error as any).detail) {
+          const detail = (error as any).detail;
+          msg = Array.isArray(detail)
+            ? detail.map((d: any) => `${d.loc ? d.loc[d.loc.length - 1] : 'Field'}: ${d.msg}`).join('; ')
+            : String(detail);
+        } else {
+          msg = JSON.stringify(error);
+        }
+        setError(msg);
       } else if (data) {
         setPrediction(data);
       }
@@ -55,7 +91,11 @@ export function PatientForm() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    const numValue = value === '' ? undefined : Number(value);
+    let numValue = value === '' ? undefined : Number(value);
+    // Clamp binary fields to 0 or 1
+    if (numValue !== undefined && ['Sex', 'St Depression', 'T inversion'].includes(field)) {
+      numValue = Math.min(1, Math.max(0, Math.round(numValue)));
+    }
     setPatientData({ [field]: numValue });
   };
 

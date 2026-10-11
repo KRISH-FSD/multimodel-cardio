@@ -32,9 +32,6 @@ function App() {
 
         {/* Center: 3D View */}
         <main className="flex-1 flex flex-col relative min-w-0 glass-panel overflow-hidden">
-          <div className="absolute top-6 left-6 z-10 bg-black/40 backdrop-blur-md border border-white/10 p-2.5 rounded-lg text-xs font-mono uppercase tracking-widest text-primary text-glow">
-            Coronary Topography
-          </div>
           <div className="flex-1 bg-transparent flex items-center justify-center relative">
             <CommandDeck />
           </div>
