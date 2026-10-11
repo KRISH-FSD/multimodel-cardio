@@ -116,94 +116,102 @@ export function PredictionResults() {
       </div>
 
       {/* ── Vessel Risk Cards (Row of 3) ── */}
-      <div className="grid grid-cols-3 gap-2.5">
-        {/* LAD Card */}
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-xs flex flex-col gap-2">
-          <div className="flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 text-rose-500" />
-            <span className="text-xs font-bold text-slate-800">LAD</span>
-          </div>
-
-          <div className="flex items-baseline gap-1 font-mono">
-            <span className="text-lg font-bold text-slate-900">
-              {(ladProb * 100).toFixed(1)}%
-            </span>
-            <span className="text-[10px] text-slate-400 font-sans font-semibold uppercase">
-              Risk
-            </span>
-          </div>
-
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-rose-500 rounded-full transition-all duration-700"
-              style={{ width: `${ladProb * 100}%` }}
-            />
-          </div>
-
-          <div
-            className={`text-[9px] font-medium text-center py-0.5 rounded-md border ${ladTier.badge}`}
-          >
-            {ladTier.label}
-          </div>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-0.5">
+          <span>Vessel Risk Breakdown</span>
+          <span className="text-[9px] text-slate-400 font-sans font-medium bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200/60">
+            CAD Risk Probability • Not Stenosis %
+          </span>
         </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          {/* LAD Card */}
+          <div className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-xs flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-rose-500" />
+              <span className="text-xs font-bold text-slate-800">LAD</span>
+            </div>
 
-        {/* LCX Card */}
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-xs flex flex-col gap-2">
-          <div className="flex items-center gap-1.5">
-            <GitBranch className="w-3.5 h-3.5 text-teal-600" />
-            <span className="text-xs font-bold text-slate-800">LCX</span>
-          </div>
+            <div className="flex items-baseline gap-1 font-mono">
+              <span className="text-lg font-bold text-slate-900">
+                {(ladProb * 100).toFixed(1)}%
+              </span>
+              <span className="text-[9px] text-slate-400 font-sans font-semibold uppercase">
+                Risk Prob.
+              </span>
+            </div>
 
-          <div className="flex items-baseline gap-1 font-mono">
-            <span className="text-lg font-bold text-slate-900">
-              {(lcxProb * 100).toFixed(1)}%
-            </span>
-            <span className="text-[10px] text-slate-400 font-sans font-semibold uppercase">
-              Risk
-            </span>
-          </div>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-rose-500 rounded-full transition-all duration-700"
+                style={{ width: `${ladProb * 100}%` }}
+              />
+            </div>
 
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
             <div
-              className="h-full bg-teal-600 rounded-full transition-all duration-700"
-              style={{ width: `${lcxProb * 100}%` }}
-            />
+              className={`text-[9px] font-medium text-center py-0.5 rounded-md border ${ladTier.badge}`}
+            >
+              {ladTier.label}
+            </div>
           </div>
 
-          <div
-            className={`text-[9px] font-medium text-center py-0.5 rounded-md border ${lcxTier.badge}`}
-          >
-            {lcxTier.label}
-          </div>
-        </div>
+          {/* LCX Card */}
+          <div className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-xs flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <GitBranch className="w-3.5 h-3.5 text-teal-600" />
+              <span className="text-xs font-bold text-slate-800">LCX</span>
+            </div>
 
-        {/* RCA Card */}
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-xs flex flex-col gap-2">
-          <div className="flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-xs font-bold text-slate-800">RCA</span>
-          </div>
+            <div className="flex items-baseline gap-1 font-mono">
+              <span className="text-lg font-bold text-slate-900">
+                {(lcxProb * 100).toFixed(1)}%
+              </span>
+              <span className="text-[9px] text-slate-400 font-sans font-semibold uppercase">
+                Risk Prob.
+              </span>
+            </div>
 
-          <div className="flex items-baseline gap-1 font-mono">
-            <span className="text-lg font-bold text-slate-900">
-              {(rcaProb * 100).toFixed(1)}%
-            </span>
-            <span className="text-[10px] text-slate-400 font-sans font-semibold uppercase">
-              Risk
-            </span>
-          </div>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-teal-600 rounded-full transition-all duration-700"
+                style={{ width: `${lcxProb * 100}%` }}
+              />
+            </div>
 
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-700"
-              style={{ width: `${rcaProb * 100}%` }}
-            />
+              className={`text-[9px] font-medium text-center py-0.5 rounded-md border ${lcxTier.badge}`}
+            >
+              {lcxTier.label}
+            </div>
           </div>
 
-          <div
-            className={`text-[9px] font-medium text-center py-0.5 rounded-md border ${rcaTier.badge}`}
-          >
-            {rcaTier.label}
+          {/* RCA Card */}
+          <div className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-xs flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-xs font-bold text-slate-800">RCA</span>
+            </div>
+
+            <div className="flex items-baseline gap-1 font-mono">
+              <span className="text-lg font-bold text-slate-900">
+                {(rcaProb * 100).toFixed(1)}%
+              </span>
+              <span className="text-[9px] text-slate-400 font-sans font-semibold uppercase">
+                Risk Prob.
+              </span>
+            </div>
+
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all duration-700"
+                style={{ width: `${rcaProb * 100}%` }}
+              />
+            </div>
+
+            <div
+              className={`text-[9px] font-medium text-center py-0.5 rounded-md border ${rcaTier.badge}`}
+            >
+              {rcaTier.label}
+            </div>
           </div>
         </div>
       </div>
