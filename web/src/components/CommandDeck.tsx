@@ -47,16 +47,17 @@ export const ARTERY_DATA: ArteryPathway[] = [
     badgeBorder: 'border-teal-200',
     cardBorder: 'border-teal-200/90',
     activeRing: 'ring-teal-500 border-teal-400',
-    // Exact verified surface vertex on Arteries2 left AV groove
-    surfacePos: [-0.876, 0.012, 2.225],
+    // Verified surface vertex on Arteries2 Left Atrioventricular Groove
+    surfacePos: [-0.901, 0.146, 2.137],
     focusRotationY: -0.65, // Smoothly turns Left AV Groove to front
     splinePoints: [
-      [-0.504, -0.276, 2.312],
-      [-0.653, -0.169, 2.290],
-      [-0.831, -0.104, 2.266],
-      [-0.876, 0.012, 2.225],
-      [-0.938, 0.104, 2.144],
-      [-1.156, 0.371, 1.841],
+      [-0.845, 0.405, 2.026],
+      [-0.934, 0.221, 2.105],
+      [-0.901, 0.146, 2.137],
+      [-0.707, -0.140, 2.280],
+      [-0.611, -0.198, 2.299],
+      [-0.740, -0.516, 2.310],
+      [-0.667, -0.717, 2.335],
     ],
   },
   {
@@ -71,18 +72,18 @@ export const ARTERY_DATA: ArteryPathway[] = [
     badgeBorder: 'border-blue-200',
     cardBorder: 'border-blue-200/90',
     activeRing: 'ring-blue-500 border-blue-400',
-    // Exact verified surface vertex on Arteries2 right AV groove
-    surfacePos: [0.853, 0.146, 1.903],
-    focusRotationY: 0.65, // Smoothly turns Right AV Groove to front
+    // Verified surface vertex on Arteries2 Right Atrioventricular Groove
+    surfacePos: [2.216, -0.267, 1.163],
+    focusRotationY: 0.75, // Smoothly turns Right AV Groove to front
     splinePoints: [
-      [0.958, 0.293, 1.830],
-      [0.877, 0.163, 1.889],
-      [0.853, 0.146, 1.903],
-      [0.804, 0.011, 1.950],
-      [0.773, -0.166, 2.028],
-      [0.746, -0.554, 2.186],
-      [0.740, -0.700, 2.211],
-      [0.715, -0.926, 2.237],
+      [1.423, 0.507, 1.580],
+      [2.315, 0.175, 1.013],
+      [2.286, -0.032, 1.091],
+      [2.216, -0.267, 1.163],
+      [2.158, -0.434, 1.236],
+      [2.027, -0.675, 1.348],
+      [1.834, -0.940, 1.548],
+      [1.750, -1.092, 1.580],
     ],
   },
   {
@@ -97,14 +98,17 @@ export const ARTERY_DATA: ArteryPathway[] = [
     badgeBorder: 'border-rose-200',
     cardBorder: 'border-rose-200/90',
     activeRing: 'ring-rose-500 border-rose-400',
-    // Exact verified surface vertex on Arteries2 anterior IV groove
-    surfacePos: [0.614, -0.856, 1.375],
-    focusRotationY: -0.15, // Smoothly turns Anterior IV Groove to front
+    // Verified surface vertex on Arteries2 Anterior Interventricular Groove (true front surface, Z > 2.4)
+    surfacePos: [-0.281, -0.683, 2.406],
+    focusRotationY: 0.05, // Front anterior view
     splinePoints: [
-      [0.614, -0.856, 1.375],
-      [0.570, -0.993, 1.233],
-      [0.527, -1.350, 1.161],
-      [0.574, -1.604, 1.387],
+      [-0.473, -0.331, 2.323],
+      [-0.408, -0.536, 2.385],
+      [-0.281, -0.683, 2.406],
+      [-0.191, -0.744, 2.412],
+      [-0.475, -1.208, 2.391],
+      [-0.258, -1.399, 2.370],
+      [-0.373, -1.674, 2.334],
     ],
   },
 ];
