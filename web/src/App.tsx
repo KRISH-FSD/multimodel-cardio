@@ -196,17 +196,17 @@ function App() {
       {/* ── 3. Main Dashboard 3-Column Layout ── */}
       <div className="flex-1 grid grid-cols-12 gap-3 min-h-0 overflow-y-auto lg:overflow-hidden">
         {/* Left Column: Patient Parameters (3 cols) */}
-        <aside className="col-span-12 lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs flex flex-col overflow-y-auto">
+        <aside className="col-span-12 lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-xs flex flex-col min-h-0 lg:overflow-hidden overflow-y-auto">
           <PatientForm />
         </aside>
 
         {/* Center Column: 3D Heart Visualization (6 cols) */}
-        <main className="col-span-12 lg:col-span-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs relative overflow-hidden flex flex-col min-h-[520px]">
+        <main className="col-span-12 lg:col-span-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs relative overflow-hidden flex flex-col min-h-[500px]">
           <CommandDeck />
         </main>
 
         {/* Right Column: Analysis Results & SHAP (3 cols) */}
-        <aside className="col-span-12 lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs flex flex-col overflow-y-auto">
+        <aside className="col-span-12 lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-xs flex flex-col min-h-0 lg:overflow-hidden overflow-y-auto">
           <PredictionResults />
         </aside>
       </div>

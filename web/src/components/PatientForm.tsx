@@ -9,11 +9,14 @@ import {
   Scale,
   Zap,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  SlidersHorizontal,
   Flame,
   CheckCircle2,
+  Stethoscope,
+  TestTube,
+  ClipboardList,
+  Sparkles,
+  RotateCcw,
+  LayoutGrid,
 } from 'lucide-react';
 
 const MOCK_POSITIVE = {
@@ -132,10 +135,13 @@ const MOCK_NEGATIVE = {
   VHD: 'N',
 };
 
+type ParamTab = 'vitals' | 'labs' | 'history' | 'compact';
+
 export function PatientForm() {
-  const { patient, setPatientData, setPrediction, setLoading, setError, isLoading } = usePatientStore();
+  const { patient, setPatientData, setPrediction, setLoading, setError, isLoading, reset } = usePatientStore();
   const [activeProfile, setActiveProfile] = useState<'high' | 'normal' | null>('high');
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [activeTab, setActiveTab] = useState<ParamTab>('vitals');
+  const [showImputeTooltip, setShowImputeTooltip] = useState(false);
 
   const handleSelectProfile = (type: 'high' | 'normal') => {
     setActiveProfile(type);
@@ -144,6 +150,15 @@ export function PatientForm() {
     } else {
       setPatientData(MOCK_NEGATIVE);
     }
+  };
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setActiveProfile(null);
+    let numValue = value === '' ? undefined : Number(value);
+    if (numValue !== undefined && ['Sex', 'St Depression', 'T inversion', 'Typical Chest Pain', 'HTN', 'Current Smoker', 'DM', 'FH'].includes(field)) {
+      numValue = Math.min(1, Math.max(0, Math.round(numValue)));
+    }
+    setPatientData({ [field]: numValue });
   };
 
   const handlePredict = async () => {
@@ -208,255 +223,688 @@ export function PatientForm() {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setActiveProfile(null);
-    let numValue = value === '' ? undefined : Number(value);
-    if (numValue !== undefined && ['Sex', 'St Depression', 'T inversion'].includes(field)) {
-      numValue = Math.min(1, Math.max(0, Math.round(numValue)));
-    }
-    setPatientData({ [field]: numValue });
+  // Helper chips for clinical values
+  const getBpBadge = (bp?: number | null) => {
+    if (!bp) return null;
+    if (bp >= 130) return <span className="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">Stage 1+</span>;
+    if (bp >= 120) return <span className="text-[9px] font-semibold text-amber-600 bg-amber-50 px-1 py-0.2 rounded border border-amber-200">Elevated</span>;
+    return <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">Normal</span>;
+  };
+
+  const getLdlBadge = (ldl?: number | null) => {
+    if (!ldl) return null;
+    if (ldl >= 160) return <span className="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">High Risk</span>;
+    if (ldl >= 100) return <span className="text-[9px] font-semibold text-amber-600 bg-amber-50 px-1 py-0.2 rounded border border-amber-200">Borderline</span>;
+    return <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">Optimal</span>;
+  };
+
+  const getBmiBadge = (bmi?: number | null) => {
+    if (!bmi) return null;
+    if (bmi >= 30) return <span className="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">Obese</span>;
+    if (bmi >= 25) return <span className="text-[9px] font-semibold text-amber-600 bg-amber-50 px-1 py-0.2 rounded border border-amber-200">Overweight</span>;
+    return <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">Normal</span>;
   };
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      {/* Card Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-100">
-          <User className="w-5 h-5 text-teal-700" />
-        </div>
-        <div>
-          <h2 className="text-sm font-bold text-slate-800 leading-tight">Patient Parameters</h2>
-          <p className="text-xs text-slate-500">Enter clinical details to analyze CAD risk.</p>
-        </div>
-      </div>
-
-      {/* Quick Load Profile Section */}
-      <div className="flex flex-col gap-1.5 pt-1">
-        <label className="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
-          <SlidersHorizontal className="w-3 h-3 text-slate-400" />
-          Quick Load Profile
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => handleSelectProfile('high')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer border ${
-              activeProfile === 'high'
-                ? 'bg-rose-50 border-rose-200 text-rose-700 shadow-xs'
-                : 'bg-white border-slate-200/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5 text-rose-500" />
-            <span>High Risk</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSelectProfile('normal')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer border ${
-              activeProfile === 'normal'
-                ? 'bg-[#0f766e] border-[#0f766e] text-white shadow-sm'
-                : 'bg-white border-slate-200/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
-            }`}
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Normal</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Demographics Section */}
-      <div className="flex flex-col gap-1.5 pt-1">
-        <span className="text-[11px] font-semibold text-slate-700">Demographics</span>
-        <div className="grid grid-cols-2 gap-2.5">
-          {/* Age */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <User className="w-3 h-3 text-slate-400" />
-              Age (Years)
-            </label>
-            <input
-              type="number"
-              value={patient.Age ?? ''}
-              onChange={(e) => handleInputChange('Age', e.target.value)}
-              placeholder="61"
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none"
-            />
+    <div className="flex flex-col h-full justify-between gap-2.5 select-none text-slate-800">
+      {/* ── 1. Compact Header ── */}
+      <div className="flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-200/80">
+            <User className="w-3.5 h-3.5 text-teal-700" />
           </div>
-
-          {/* Sex */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <User className="w-3 h-3 text-slate-400" />
-              Sex (0=F, 1=M)
-            </label>
-            <select
-              value={patient.Sex ?? 1}
-              onChange={(e) => handleInputChange('Sex', e.target.value)}
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none cursor-pointer"
-            >
-              <option value={1}>1 (Male)</option>
-              <option value={0}>0 (Female)</option>
-            </select>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-xs font-bold text-slate-900 leading-tight">Patient Parameters</h2>
+              <span className="text-[9px] font-semibold bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded border border-teal-200/60 font-mono">
+                PRN-1042
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-none mt-0.5">Clinical markers for multi-vessel CAD AI</p>
           </div>
         </div>
-      </div>
 
-      {/* Clinical Inputs Section */}
-      <div className="flex flex-col gap-1.5 pt-1">
-        <span className="text-[11px] font-semibold text-slate-700">Clinical Inputs</span>
-        <div className="grid grid-cols-2 gap-2.5">
-          {/* BMI */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Scale className="w-3 h-3 text-teal-600" />
-              BMI (kg/m²)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={patient.BMI ?? ''}
-              onChange={(e) => handleInputChange('BMI', e.target.value)}
-              placeholder="29.38"
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none"
-            />
-          </div>
-
-          {/* Blood Pressure */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <HeartPulse className="w-3 h-3 text-rose-500" />
-              Blood Pressure (mmHg)
-            </label>
-            <input
-              type="number"
-              value={patient.BP ?? ''}
-              onChange={(e) => handleInputChange('BP', e.target.value)}
-              placeholder="123"
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none"
-            />
-          </div>
-
-          {/* Pulse Rate */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Activity className="w-3 h-3 text-rose-500" />
-              Pulse Rate (bpm)
-            </label>
-            <input
-              type="number"
-              value={patient.PR ?? ''}
-              onChange={(e) => handleInputChange('PR', e.target.value)}
-              placeholder="94"
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none"
-            />
-          </div>
-
-          {/* LDL Chol */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Beaker className="w-3 h-3 text-rose-500" />
-              LDL Chol. (mg/dL)
-            </label>
-            <input
-              type="number"
-              value={patient.LDL ?? ''}
-              onChange={(e) => handleInputChange('LDL', e.target.value)}
-              placeholder="167"
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none"
-            />
-          </div>
-
-          {/* Fasting Sugar */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Beaker className="w-3 h-3 text-teal-600" />
-              Fasting Sugar (mg/dL)
-            </label>
-            <input
-              type="number"
-              value={patient.FBS ?? ''}
-              onChange={(e) => handleInputChange('FBS', e.target.value)}
-              placeholder="94"
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none"
-            />
-          </div>
-
-          {/* ST Depression */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Activity className="w-3 h-3 text-teal-600" />
-              ST Dep. (0/1)
-            </label>
-            <select
-              value={patient['St Depression'] ?? 0}
-              onChange={(e) => handleInputChange('St Depression', e.target.value)}
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none cursor-pointer"
-            >
-              <option value={0}>0 (No)</option>
-              <option value={1}>1 (Yes)</option>
-            </select>
-          </div>
-
-          {/* T Inversion */}
-          <div className="flex flex-col gap-1 col-span-2 sm:col-span-1">
-            <label className="text-[10px] text-slate-500 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-500" />
-              T Inversion (0/1)
-            </label>
-            <select
-              value={patient['T inversion'] ?? 0}
-              onChange={(e) => handleInputChange('T inversion', e.target.value)}
-              className="bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1.5 text-xs text-slate-800 font-medium transition-all outline-none cursor-pointer"
-            >
-              <option value={0}>0 (No)</option>
-              <option value={1}>1 (Yes)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Advanced Accordion Toggle */}
-      <div className="pt-1">
         <button
           type="button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full py-2 px-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-100/60 text-slate-500 hover:text-slate-700 text-[11px] font-medium flex items-center justify-between transition-all cursor-pointer"
+          onClick={() => {
+            reset();
+            setActiveProfile(null);
+          }}
+          className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+          title="Reset Parameters"
         >
-          <span className="flex items-center gap-1.5">
-            <span className="text-slate-400">✕</span> Advanced Inputs (Auto-computed)
-          </span>
-          {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* ── 2. Quick Load Profiles (Segmented Switcher) ── */}
+      <div className="bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/70 grid grid-cols-2 gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={() => handleSelectProfile('high')}
+          className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all duration-150 cursor-pointer ${
+            activeProfile === 'high'
+              ? 'bg-rose-50 text-rose-700 border border-rose-200/90 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <Flame className="w-3.5 h-3.5 text-rose-500" />
+          <span>High Risk Preset</span>
         </button>
 
-        {showAdvanced && (
-          <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-[11px] text-slate-600 space-y-1.5">
-            <p className="font-medium text-slate-700">Auto-Imputed Biomarkers & ECG:</p>
-            <p className="text-slate-500 text-[10px] leading-relaxed">
-              Creatinine (0.8 mg/dL), Triglycerides (150 mg/dL), HDL (45 mg/dL), Ejection Fraction (55%), Hemoglobin (14.5 g/dL), Electrolytes & RWMA are automatically imputed using population baselines.
+        <button
+          type="button"
+          onClick={() => handleSelectProfile('normal')}
+          className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all duration-150 cursor-pointer ${
+            activeProfile === 'normal'
+              ? 'bg-[#0f766e] text-white border border-[#0f766e] shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Normal Baseline</span>
+        </button>
+      </div>
+
+      {/* ── 3. Categorized Parameter Sub-Tabs (Scroll-Free Architecture) ── */}
+      <div className="flex items-center justify-between border-b border-slate-200/80 pb-1 shrink-0">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab('vitals')}
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              activeTab === 'vitals'
+                ? 'bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60'
+            }`}
+          >
+            <Stethoscope className="w-3 h-3 text-teal-600" />
+            <span>Vitals</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('labs')}
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              activeTab === 'labs'
+                ? 'bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60'
+            }`}
+          >
+            <TestTube className="w-3 h-3 text-teal-600" />
+            <span>Labs & ECG</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              activeTab === 'history'
+                ? 'bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/60'
+            }`}
+          >
+            <ClipboardList className="w-3 h-3 text-teal-600" />
+            <span>History</span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('compact')}
+          className={`p-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+            activeTab === 'compact'
+              ? 'bg-slate-800 text-white shadow-2xs'
+              : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+          }`}
+          title="All Parameters (High-Density View)"
+        >
+          <LayoutGrid className="w-3 h-3" />
+          <span className="text-[9px]">All</span>
+        </button>
+      </div>
+
+      {/* ── 4. Main Tab Body (Strictly Sized, ZERO Scrolling) ── */}
+      <div className="flex-1 min-h-0 flex flex-col justify-start">
+        {/* TAB 1: VITALS & DEMOGRAPHICS */}
+        {activeTab === 'vitals' && (
+          <div className="space-y-2 animate-in fade-in-50 duration-150">
+            {/* Age & Sex Row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <User className="w-2.5 h-2.5 text-slate-400" /> Age
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">Years</span>
+                </div>
+                <input
+                  type="number"
+                  value={patient.Age ?? ''}
+                  onChange={(e) => handleInputChange('Age', e.target.value)}
+                  placeholder="61"
+                  className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span>Sex</span>
+                  <span className="text-[9px] text-slate-400 font-mono">0=F, 1=M</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('Sex', 1)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      (patient.Sex ?? 1) === 1
+                        ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('Sex', 0)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      patient.Sex === 0
+                        ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* BMI & BP Row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Scale className="w-2.5 h-2.5 text-teal-600" /> BMI
+                  </span>
+                  {getBmiBadge(patient.BMI)}
+                </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={patient.BMI ?? ''}
+                  onChange={(e) => handleInputChange('BMI', e.target.value)}
+                  placeholder="29.38"
+                  className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <HeartPulse className="w-2.5 h-2.5 text-rose-500" /> BP
+                  </span>
+                  {getBpBadge(patient.BP)}
+                </div>
+                <input
+                  type="number"
+                  value={patient.BP ?? ''}
+                  onChange={(e) => handleInputChange('BP', e.target.value)}
+                  placeholder="123"
+                  className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Pulse Rate & Smoker Row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Activity className="w-2.5 h-2.5 text-rose-500" /> Pulse (bpm)
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">60-100</span>
+                </div>
+                <input
+                  type="number"
+                  value={patient.PR ?? ''}
+                  onChange={(e) => handleInputChange('PR', e.target.value)}
+                  placeholder="94"
+                  className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span>Current Smoker</span>
+                  <span className="text-[9px] text-slate-400 font-mono">0 / 1</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('Current Smoker', 0)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      (patient['Current Smoker'] ?? 0) === 0
+                        ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    No
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('Current Smoker', 1)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      patient['Current Smoker'] === 1
+                        ? 'bg-rose-50 text-rose-700 shadow-2xs border border-rose-200'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Yes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: LABS & ECG */}
+        {activeTab === 'labs' && (
+          <div className="space-y-2 animate-in fade-in-50 duration-150">
+            {/* LDL & Fasting Sugar Row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Beaker className="w-2.5 h-2.5 text-rose-500" /> LDL Chol.
+                  </span>
+                  {getLdlBadge(patient.LDL)}
+                </div>
+                <input
+                  type="number"
+                  value={patient.LDL ?? ''}
+                  onChange={(e) => handleInputChange('LDL', e.target.value)}
+                  placeholder="167"
+                  className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Beaker className="w-2.5 h-2.5 text-teal-600" /> Sugar (FBS)
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">mg/dL</span>
+                </div>
+                <input
+                  type="number"
+                  value={patient.FBS ?? ''}
+                  onChange={(e) => handleInputChange('FBS', e.target.value)}
+                  placeholder="94"
+                  className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            {/* ST Depression & T Inversion Binary Switches */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Activity className="w-2.5 h-2.5 text-teal-600" /> ST Dep.
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">ECG</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('St Depression', 0)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      (patient['St Depression'] ?? 0) === 0
+                        ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    0 (No)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('St Depression', 1)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      patient['St Depression'] === 1
+                        ? 'bg-rose-50 text-rose-700 shadow-2xs border border-rose-200'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    1 (Yes)
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Zap className="w-2.5 h-2.5 text-amber-500" /> T Inversion
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">ECG</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('T inversion', 0)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      (patient['T inversion'] ?? 0) === 0
+                        ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    0 (No)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('T inversion', 1)}
+                    className={`py-1 text-[10px] font-semibold rounded transition-all cursor-pointer ${
+                      patient['T inversion'] === 1
+                        ? 'bg-rose-50 text-rose-700 shadow-2xs border border-rose-200'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    1 (Yes)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Ejection Fraction (EF-TTE) */}
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                <span className="flex items-center gap-1 font-semibold text-slate-700">
+                  <HeartPulse className="w-2.5 h-2.5 text-rose-500" /> EF-TTE (Ejection Fraction %)
+                </span>
+                <span className="text-[9px] text-slate-500 font-mono">Normal ≥50%</span>
+              </div>
+              <input
+                type="number"
+                value={patient['EF-TTE'] ?? ''}
+                onChange={(e) => handleInputChange('EF-TTE', e.target.value)}
+                placeholder="48"
+                className="bg-slate-50 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-teal-600 focus:ring-1 focus:ring-teal-600 rounded-lg px-2 py-1 text-xs text-slate-900 font-semibold outline-none transition-all"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: CLINICAL HISTORY */}
+        {activeTab === 'history' && (
+          <div className="space-y-1.5 animate-in fade-in-50 duration-150">
+            {/* Typical Chest Pain */}
+            <div className="flex items-center justify-between p-1.5 bg-slate-50 rounded-lg border border-slate-200/70">
+              <div className="text-[10px]">
+                <div className="font-semibold text-slate-800">Typical Chest Pain</div>
+                <div className="text-slate-400 text-[9px]">Substernal chest tightness on exertion</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1 w-28 bg-slate-200/60 p-0.5 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('Typical Chest Pain', 0)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    (patient['Typical Chest Pain'] ?? 0) === 0
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600'
+                  }`}
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('Typical Chest Pain', 1)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    patient['Typical Chest Pain'] === 1
+                      ? 'bg-rose-500 text-white shadow-2xs font-bold'
+                      : 'text-slate-600'
+                  }`}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+
+            {/* Hypertension */}
+            <div className="flex items-center justify-between p-1.5 bg-slate-50 rounded-lg border border-slate-200/70">
+              <div className="text-[10px]">
+                <div className="font-semibold text-slate-800">Hypertension (HTN)</div>
+                <div className="text-slate-400 text-[9px]">Documented chronic elevated BP</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1 w-28 bg-slate-200/60 p-0.5 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('HTN', 0)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    (patient.HTN ?? 0) === 0 ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                  }`}
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('HTN', 1)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    patient.HTN === 1 ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-slate-600'
+                  }`}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+
+            {/* Diabetes Mellitus */}
+            <div className="flex items-center justify-between p-1.5 bg-slate-50 rounded-lg border border-slate-200/70">
+              <div className="text-[10px]">
+                <div className="font-semibold text-slate-800">Diabetes (DM)</div>
+                <div className="text-slate-400 text-[9px]">Diagnosed Type 1 or Type 2 DM</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1 w-28 bg-slate-200/60 p-0.5 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('DM', 0)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    (patient.DM ?? 0) === 0 ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                  }`}
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('DM', 1)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    patient.DM === 1 ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-slate-600'
+                  }`}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+
+            {/* Family History */}
+            <div className="flex items-center justify-between p-1.5 bg-slate-50 rounded-lg border border-slate-200/70">
+              <div className="text-[10px]">
+                <div className="font-semibold text-slate-800">Family History (FH)</div>
+                <div className="text-slate-400 text-[9px]">Premature coronary disease in 1st degree</div>
+              </div>
+              <div className="grid grid-cols-2 gap-1 w-28 bg-slate-200/60 p-0.5 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('FH', 0)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    (patient.FH ?? 0) === 0 ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600'
+                  }`}
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('FH', 1)}
+                  className={`py-0.5 text-[9px] font-semibold rounded transition-all cursor-pointer ${
+                    patient.FH === 1 ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-slate-600'
+                  }`}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: COMPACT ALL-IN-ONE (Zero Scrolling Medical Cockpit) */}
+        {activeTab === 'compact' && (
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 animate-in fade-in-50 duration-150 text-[10px]">
+            {/* Age */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">Age</span>
+              <input
+                type="number"
+                value={patient.Age ?? ''}
+                onChange={(e) => handleInputChange('Age', e.target.value)}
+                placeholder="61"
+                className="w-12 text-right bg-white px-1 py-0.5 rounded border border-slate-200 font-mono font-bold text-xs outline-none"
+              />
+            </div>
+
+            {/* Sex */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">Sex</span>
+              <select
+                value={patient.Sex ?? 1}
+                onChange={(e) => handleInputChange('Sex', e.target.value)}
+                className="bg-white px-1 py-0.5 rounded border border-slate-200 font-medium text-[10px] outline-none"
+              >
+                <option value={1}>Male (1)</option>
+                <option value={0}>Female (0)</option>
+              </select>
+            </div>
+
+            {/* BMI */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">BMI</span>
+              <input
+                type="number"
+                step="0.1"
+                value={patient.BMI ?? ''}
+                onChange={(e) => handleInputChange('BMI', e.target.value)}
+                placeholder="29.4"
+                className="w-14 text-right bg-white px-1 py-0.5 rounded border border-slate-200 font-mono font-bold text-xs outline-none"
+              />
+            </div>
+
+            {/* BP */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">BP</span>
+              <input
+                type="number"
+                value={patient.BP ?? ''}
+                onChange={(e) => handleInputChange('BP', e.target.value)}
+                placeholder="123"
+                className="w-12 text-right bg-white px-1 py-0.5 rounded border border-slate-200 font-mono font-bold text-xs outline-none"
+              />
+            </div>
+
+            {/* Pulse */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">Pulse</span>
+              <input
+                type="number"
+                value={patient.PR ?? ''}
+                onChange={(e) => handleInputChange('PR', e.target.value)}
+                placeholder="94"
+                className="w-12 text-right bg-white px-1 py-0.5 rounded border border-slate-200 font-mono font-bold text-xs outline-none"
+              />
+            </div>
+
+            {/* LDL */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">LDL</span>
+              <input
+                type="number"
+                value={patient.LDL ?? ''}
+                onChange={(e) => handleInputChange('LDL', e.target.value)}
+                placeholder="167"
+                className="w-12 text-right bg-white px-1 py-0.5 rounded border border-slate-200 font-mono font-bold text-xs outline-none"
+              />
+            </div>
+
+            {/* FBS */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">FBS</span>
+              <input
+                type="number"
+                value={patient.FBS ?? ''}
+                onChange={(e) => handleInputChange('FBS', e.target.value)}
+                placeholder="94"
+                className="w-12 text-right bg-white px-1 py-0.5 rounded border border-slate-200 font-mono font-bold text-xs outline-none"
+              />
+            </div>
+
+            {/* Chest Pain */}
+            <div className="flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
+              <span className="text-slate-600 font-medium">Angina</span>
+              <select
+                value={patient['Typical Chest Pain'] ?? 1}
+                onChange={(e) => handleInputChange('Typical Chest Pain', e.target.value)}
+                className="bg-white px-1 py-0.5 rounded border border-slate-200 font-medium text-[10px] outline-none"
+              >
+                <option value={1}>Yes (1)</option>
+                <option value={0}>No (0)</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── 5. Auto-Imputed Status Bar & Popover ── */}
+      <div className="relative shrink-0">
+        <button
+          type="button"
+          onClick={() => setShowImputeTooltip(!showImputeTooltip)}
+          className="w-full py-1 px-2.5 rounded-lg border border-slate-200/80 bg-slate-50 hover:bg-slate-100/70 text-slate-500 hover:text-slate-700 text-[10px] flex items-center justify-between transition-all cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5 font-medium">
+            <Sparkles className="w-3 h-3 text-teal-600" />
+            <span>Auto-Imputed Biomarkers (40+ features)</span>
+          </span>
+          <span className="text-[9px] text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200/80 font-mono">
+            Active
+          </span>
+        </button>
+
+        {showImputeTooltip && (
+          <div className="absolute bottom-full left-0 right-0 mb-1.5 p-2.5 bg-slate-900 text-white rounded-xl shadow-xl border border-slate-800 text-[10px] leading-relaxed z-50">
+            <div className="font-semibold text-teal-400 mb-1 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Population Baseline Imputation
+            </div>
+            <p className="text-slate-300">
+              Secondary clinical variables (Creatinine 0.8, TG 150, HDL 45, Hemoglobin 14.5, RWMA, ESR, WBC) are dynamically filled with verified population medians.
             </p>
           </div>
         )}
       </div>
 
-      {/* Primary Action Button */}
-      <div className="mt-auto pt-2">
+      {/* ── 6. Primary Action Button ── */}
+      <div className="shrink-0 pt-0.5">
         <button
           type="button"
           onClick={handlePredict}
           disabled={isLoading || Object.keys(patient).length === 0}
-          className="w-full bg-gradient-to-r from-[#0f766e] to-[#0891b2] hover:from-[#115e59] hover:to-[#0e7490] text-white font-medium py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.99]"
+          className="w-full bg-gradient-to-r from-[#0f766e] via-[#0d9488] to-[#0891b2] hover:from-[#115e59] hover:to-[#0e7490] text-white font-semibold py-2.5 px-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.99]"
         >
           {isLoading ? (
             <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Analyzing Patient Data...</span>
+              <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              <span>Evaluating Coronary Risk...</span>
             </>
           ) : (
             <>
-              <Activity className="w-4 h-4" />
+              <Activity className="w-3.5 h-3.5 text-white" />
               <span>Run CardioVision Analysis</span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 text-white/80" />
             </>
           )}
         </button>

@@ -648,13 +648,27 @@ function CameraController({
 
 // ─── Main CommandDeck Viewport ─────────────────────────────────────────
 export function CommandDeck() {
-  const { selectedModel, setSelectedModel, prediction } = usePatientStore();
+  const { selectedModel, setSelectedModel, prediction, focusedVessel, setFocusedVessel } = usePatientStore();
   const [isRotating, setIsRotating] = useState(false);
   const [targetRotationY, setTargetRotationY] = useState<number | null>(null);
   const [selectedVessel, setSelectedVessel] = useState<string | null>(null);
   const [showCards, setShowCards] = useState(true);
   const [zoomAction, setZoomAction] = useState(0);
   const [resetTrigger, setResetTrigger] = useState(0);
+
+  // Sync external focusedVessel changes with 3D camera rotation and highlight
+  useEffect(() => {
+    if (focusedVessel) {
+      setSelectedVessel(focusedVessel);
+      setIsRotating(false);
+      const art = ARTERY_DATA.find((a) => a.id === focusedVessel);
+      if (art) {
+        setTargetRotationY(art.focusRotationY);
+      }
+    } else {
+      setSelectedVessel(null);
+    }
+  }, [focusedVessel]);
 
   const controlsRef = useRef<any>(null);
 
@@ -718,9 +732,11 @@ export function CommandDeck() {
   const handleSelectVessel = (id: 'lad' | 'lcx' | 'rca') => {
     if (selectedVessel === id) {
       setSelectedVessel(null);
+      setFocusedVessel(null);
       setTargetRotationY(0);
     } else {
       setSelectedVessel(id);
+      setFocusedVessel(id);
       setIsRotating(false);
       const art = ARTERY_DATA.find((a) => a.id === id);
       if (art) {
@@ -732,9 +748,11 @@ export function CommandDeck() {
   const resetCamera = () => {
     setTargetRotationY(0);
     setSelectedVessel(null);
+    setFocusedVessel(null);
     setIsRotating(false);
     setResetTrigger((prev) => prev + 1);
   };
+
 
   const handleZoomIn = () => setZoomAction((prev) => prev + 1);
   const handleZoomOut = () => setZoomAction((prev) => prev - 1);

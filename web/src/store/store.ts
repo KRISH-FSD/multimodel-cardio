@@ -5,6 +5,7 @@ type PatientData = components['schemas']['PatientInput']
 type PredictionResponse = components['schemas']['PredictionResponse']
 
 export type HeartModel = 'existing' | 'glb'
+export type ArteryId = 'lad' | 'lcx' | 'rca'
 
 interface PatientState {
   patient: Partial<PatientData>
@@ -12,11 +13,15 @@ interface PatientState {
   isLoading: boolean
   error: string | null
   selectedModel: HeartModel
+  focusedVessel: ArteryId | null
+  activeResultTab: 'assessment' | 'guide'
   setPatientData: (data: Partial<PatientData>) => void
   setPrediction: (prediction: PredictionResponse | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
   setSelectedModel: (model: HeartModel) => void
+  setFocusedVessel: (vessel: ArteryId | null) => void
+  setActiveResultTab: (tab: 'assessment' | 'guide') => void
   reset: () => void
 }
 
@@ -26,10 +31,24 @@ export const usePatientStore = create<PatientState>((set) => ({
   isLoading: false,
   error: null,
   selectedModel: 'glb',
+  focusedVessel: null,
+  activeResultTab: 'assessment',
   setPatientData: (data) => set((state) => ({ patient: { ...state.patient, ...data } })),
   setPrediction: (prediction) => set({ prediction, error: null }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error, isLoading: false }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
-  reset: () => set({ patient: {}, prediction: null, error: null, isLoading: false, selectedModel: 'glb' })
+  setFocusedVessel: (focusedVessel) => set({ focusedVessel }),
+  setActiveResultTab: (activeResultTab) => set({ activeResultTab }),
+  reset: () =>
+    set({
+      patient: {},
+      prediction: null,
+      error: null,
+      isLoading: false,
+      selectedModel: 'glb',
+      focusedVessel: null,
+      activeResultTab: 'assessment',
+    }),
 }))
+
