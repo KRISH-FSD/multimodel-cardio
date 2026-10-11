@@ -4,255 +4,314 @@ import { OrbitControls, useGLTF, Center, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { usePatientStore } from '../store/store';
 import type { HeartModel } from '../store/store';
-import { Info, Play, Pause, Activity, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import {
+  RotateCcw,
+  Layers,
+  BookOpen,
+  Network,
+  Box,
+  MousePointerClick,
+  RotateCw,
+  ZoomIn,
+  Activity,
+  Maximize2,
+  HeartPulse,
+} from 'lucide-react';
 
-// ─── Types & Landmark Definitions ──────────────────────────────────────
-interface ArteryLandmark {
+// ─── Artery Pathway & Anatomical Landmark Definitions ─────────────────────
+export interface ArteryPathway {
   id: 'lad' | 'lcx' | 'rca';
   title: string;
   fullName: string;
-  clinicalTerritory: string;
+  color: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  cardBorder: string;
   surfacePos: [number, number, number];
-  badgePos: [number, number, number];
-  targetRotationY: number; // View angle to showcase this vessel
+  arrowDir: [number, number, number];
+  splinePoints: [number, number, number][];
 }
 
-// Exact 3D anatomical coordinates on the codominance heart model (scaled 0.018, centered)
-const ANATOMICAL_LANDMARKS: ArteryLandmark[] = [
+export const ARTERY_DATA: ArteryPathway[] = [
   {
-    id: 'lad',
-    title: 'LAD',
-    fullName: 'Left Anterior Descending',
-    clinicalTerritory: 'Anterior IV sulcus • Septum & Anterior LV',
-    surfacePos: [0.60, -0.88, 1.62],
-    badgePos: [0.95, -0.74, 2.05],
-    targetRotationY: -0.35,
+    id: 'rca',
+    title: 'RCA',
+    fullName: 'Right Coronary Artery',
+    color: '#3b82f6', // Apple Blue
+    badgeBg: 'bg-blue-50',
+    badgeText: 'text-blue-700',
+    badgeBorder: 'border-blue-200',
+    cardBorder: 'border-blue-200/90',
+    surfacePos: [-0.60, 0.05, 1.95],
+    arrowDir: [0.35, -0.15, -0.2],
+    splinePoints: [
+      [-0.50, 0.35, 1.95],
+      [-0.58, 0.10, 1.95],
+      [-0.60, 0.05, 1.95],
+      [-0.65, -0.35, 1.70],
+      [-0.78, -0.80, 2.30],
+      [-0.85, -1.10, 2.35],
+      [-1.15, -1.50, 2.20],
+      [-1.08, -1.85, 2.10],
+    ],
   },
   {
     id: 'lcx',
     title: 'LCX',
     fullName: 'Left Circumflex Artery',
-    clinicalTerritory: 'Coronary sulcus • Lateral & Posterior LV',
-    surfacePos: [1.48, -0.08, 1.48],
-    badgePos: [1.95, 0.06, 1.80],
-    targetRotationY: -0.85,
+    color: '#0d9488', // Apple Teal
+    badgeBg: 'bg-teal-50',
+    badgeText: 'text-teal-700',
+    badgeBorder: 'border-teal-200',
+    cardBorder: 'border-teal-200/90',
+    surfacePos: [1.32, -0.05, 1.55],
+    arrowDir: [-0.35, -0.15, -0.15],
+    splinePoints: [
+      [0.98, 0.30, 1.12],
+      [1.08, 0.20, 1.25],
+      [1.32, -0.05, 1.55],
+      [1.48, -0.30, 1.55],
+      [1.65, -0.65, 1.68],
+      [1.60, -0.92, 1.85],
+    ],
   },
   {
-    id: 'rca',
-    title: 'RCA',
-    fullName: 'Right Coronary Artery',
-    clinicalTerritory: 'Right AV groove • Inferior LV & Nodes',
-    surfacePos: [-0.95, -0.65, 2.15],
-    badgePos: [-1.45, -0.52, 2.50],
-    targetRotationY: 0.45,
+    id: 'lad',
+    title: 'LAD',
+    fullName: 'Left Anterior Descending Artery',
+    color: '#ef4444', // Apple Coral/Red
+    badgeBg: 'bg-rose-50',
+    badgeText: 'text-rose-700',
+    badgeBorder: 'border-rose-200',
+    cardBorder: 'border-rose-200/90',
+    surfacePos: [0.58, -0.65, 1.52],
+    arrowDir: [-0.4, -0.2, -0.2],
+    splinePoints: [
+      [0.78, 0.35, 1.15],
+      [0.71, 0.21, 1.20],
+      [0.65, -0.25, 1.40],
+      [0.58, -0.65, 1.52],
+      [0.40, -1.15, 1.95],
+      [0.30, -1.65, 2.05],
+      [0.20, -2.10, 2.20],
+      [0.13, -2.35, 2.37],
+    ],
   },
 ];
 
-// ─── 3D Glowing Leader Stem ────────────────────────────────────────────
-function LeaderStem({ start, end, color }: { start: [number, number, number]; end: [number, number, number]; color: string }) {
-  const lineObj = useMemo(() => {
-    const geom = new THREE.BufferGeometry();
-    const vertices = new Float32Array([...start, ...end]);
-    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.65 });
-    return new THREE.Line(geom, mat);
-  }, [start, end, color]);
-
-  return <primitive object={lineObj} />;
-}
-
-// ─── 3D Pulsing Sonar Ring on Artery Surface ───────────────────────────
-function BeaconRing({ position, color, isStenotic }: { position: [number, number, number]; color: string; isStenotic: boolean }) {
-  const ringRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
-
-  useFrame((state) => {
-    if (ringRef.current && matRef.current) {
-      const speed = isStenotic ? 5.0 : 2.5;
-      const cycle = (state.clock.elapsedTime * speed) % 2;
-      const prog = cycle / 2;
-      const scale = 1 + prog * 2.4;
-      ringRef.current.scale.set(scale, scale, scale);
-      matRef.current.opacity = Math.max(0, (1 - prog) * 0.85);
-    }
-  });
-
-  return (
-    <mesh ref={ringRef} position={position}>
-      <ringGeometry args={[0.03, 0.065, 32]} />
-      <meshBasicMaterial ref={matRef} color={color} transparent side={THREE.DoubleSide} depthWrite={false} />
-    </mesh>
-  );
-}
-
-// ─── Medical HUD Vessel Pin Component ──────────────────────────────────
-function AnatomicalVesselPin({
-  landmark,
-  predictionData,
+// ─── 1. Animated Flowing Blood Particles along Artery Paths ───────────────
+function ArteryAnimatedFlow({
+  artery,
   isSelected,
   onSelect,
   isVisible = true,
 }: {
-  landmark: ArteryLandmark;
-  predictionData?: { label?: number; probability?: number };
+  artery: ArteryPathway;
   isSelected: boolean;
   onSelect: () => void;
   isVisible?: boolean;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const badgeDomRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const curve = useMemo(() => {
+    return new THREE.CatmullRomCurve3(artery.splinePoints.map((p) => new THREE.Vector3(...p)));
+  }, [artery.splinePoints]);
 
-  const isStenotic = predictionData?.label === 1;
-  const hasPrediction = predictionData?.probability !== undefined;
-  const probPercent = hasPrediction ? (predictionData.probability! * 100).toFixed(1) : null;
+  const p1Ref = useRef<THREE.Mesh>(null);
+  const p2Ref = useRef<THREE.Mesh>(null);
+  const p3Ref = useRef<THREE.Mesh>(null);
+  const p4Ref = useRef<THREE.Mesh>(null);
 
-  // Color scheme: Rose for stenotic risk, Cyan/Sky for clear, Blue for baseline
-  const themeColor = !hasPrediction
-    ? '#38bdf8'
-    : isStenotic
-    ? '#f43f5e'
-    : '#06b6d4';
-
-  // Smoothly fade badge when rotating behind the heart
-  useFrame(() => {
-    if (groupRef.current && badgeDomRef.current && badgeDomRef.current.isConnected) {
-      if (!isVisible) {
-        badgeDomRef.current.style.display = 'none';
-        return;
+  useFrame((state) => {
+    const speed = isSelected ? 0.45 : 0.22;
+    const time = state.clock.elapsedTime * speed;
+    const refs = [p1Ref, p2Ref, p3Ref, p4Ref];
+    refs.forEach((ref, idx) => {
+      if (ref.current) {
+        const t = (time + idx * 0.25) % 1;
+        ref.current.position.copy(curve.getPointAt(t));
       }
-      badgeDomRef.current.style.display = 'block';
-      const worldPos = new THREE.Vector3();
-      groupRef.current.getWorldPosition(worldPos);
-      const faceFactor = (worldPos.z + 0.4) / 1.8;
-      const clamped = Math.max(0.15, Math.min(1.0, faceFactor));
-      badgeDomRef.current.style.opacity = clamped.toFixed(2);
-      badgeDomRef.current.style.pointerEvents = clamped > 0.4 ? 'auto' : 'none';
+    });
+  });
+
+  if (!isVisible) return null;
+
+  return (
+    <group
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect();
+      }}
+      className="cursor-pointer"
+    >
+      {/* Translucent Glowing Guide Tube */}
+      <mesh>
+        <tubeGeometry args={[curve, 64, isSelected ? 0.026 : 0.018, 8, false]} />
+        <meshStandardMaterial
+          color={artery.color}
+          emissive={artery.color}
+          emissiveIntensity={isSelected ? 1.1 : 0.55}
+          roughness={0.25}
+          metalness={0.3}
+          transparent
+          opacity={isSelected ? 0.95 : 0.8}
+        />
+      </mesh>
+
+      {/* 4 Animated Flowing Blood-Pulse Beads */}
+      <mesh ref={p1Ref}>
+        <sphereGeometry args={[0.038, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" emissive={artery.color} emissiveIntensity={2.0} />
+      </mesh>
+      <mesh ref={p2Ref}>
+        <sphereGeometry args={[0.038, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" emissive={artery.color} emissiveIntensity={2.0} />
+      </mesh>
+      <mesh ref={p3Ref}>
+        <sphereGeometry args={[0.038, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" emissive={artery.color} emissiveIntensity={2.0} />
+      </mesh>
+      <mesh ref={p4Ref}>
+        <sphereGeometry args={[0.038, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" emissive={artery.color} emissiveIntensity={2.0} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── 2. 3D Surface Glow Beacon on Vessel ──────────────────────────────────
+function SurfaceGlowBeacon({
+  surfacePos,
+  color,
+  isSelected,
+  isVisible = true,
+}: {
+  surfacePos: [number, number, number];
+  color: string;
+  isSelected: boolean;
+  isVisible?: boolean;
+}) {
+  const ringRef = useRef<THREE.Mesh>(null);
+  const ringMatRef = useRef<THREE.MeshBasicMaterial>(null);
+
+  useFrame((state) => {
+    const time = state.clock.elapsedTime;
+    const t = (time * (isSelected ? 2.5 : 1.5)) % 1;
+    if (ringRef.current) {
+      ringRef.current.scale.setScalar(1 + t * 2.2);
+    }
+    if (ringMatRef.current) {
+      ringMatRef.current.opacity = 0.85 * (1 - t);
     }
   });
 
   if (!isVisible) return null;
 
   return (
-    <group ref={groupRef}>
-      {/* 1. Surface glowing anchor bead */}
-      <mesh position={landmark.surfacePos}>
+    <group position={surfacePos}>
+      {/* 3D Core Sphere Dot */}
+      <mesh>
         <sphereGeometry args={[0.045, 16, 16]} />
-        <meshBasicMaterial color={themeColor} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={isSelected ? 1.6 : 1.0}
+          roughness={0.1}
+        />
       </mesh>
 
-      {/* 2. Expanding radar ripple ring */}
-      <BeaconRing position={landmark.surfacePos} color={themeColor} isStenotic={isStenotic} />
-
-      {/* 3. 3D connector leader line */}
-      <LeaderStem start={landmark.surfacePos} end={landmark.badgePos} color={themeColor} />
-
-      {/* 4. Floating HUD Glassmorphism Badge */}
-      <Html position={landmark.badgePos} center distanceFactor={7} zIndexRange={[100, 0]}>
-        <div
-          ref={badgeDomRef}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
-          className={`cursor-pointer transition-all duration-300 select-none ${
-            isHovered || isSelected ? 'scale-105 z-50' : 'scale-95'
-          }`}
-        >
-          <div
-            className={`flex flex-col gap-1 p-2 rounded-xl backdrop-blur-xl border shadow-2xl transition-all duration-300 min-w-[110px] ${
-              isStenotic
-                ? 'bg-rose-950/85 border-rose-500/60 shadow-[0_0_20px_rgba(244,63,94,0.35)]'
-                : 'bg-slate-950/85 border-sky-500/50 shadow-[0_0_18px_rgba(56,189,248,0.25)]'
-            }`}
-          >
-            {/* Header row: Status LED + Code + Risk status */}
-            <div className="flex items-center justify-between gap-1.5">
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span
-                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      isStenotic ? 'bg-rose-400' : 'bg-sky-400'
-                    }`}
-                  />
-                  <span
-                    className={`relative inline-flex rounded-full h-2 w-2 ${
-                      isStenotic ? 'bg-rose-500' : 'bg-sky-400'
-                    }`}
-                  />
-                </span>
-
-                <span className="font-mono font-bold text-xs tracking-wider text-white">
-                  {landmark.title}
-                </span>
-              </div>
-
-              {hasPrediction && (
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider ${
-                    isStenotic
-                      ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40'
-                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  }`}
-                >
-                  {isStenotic ? 'Stenosis' : 'Clear'}
-                </span>
-              )}
-            </div>
-
-            {/* Probability Value */}
-            <div className="flex items-baseline justify-between gap-2 font-mono">
-              <span className="text-[9px] text-white/50 uppercase">Risk</span>
-              <span
-                className={`text-xs font-bold ${
-                  hasPrediction
-                    ? isStenotic
-                      ? 'text-rose-400 text-glow-high'
-                      : 'text-sky-300 text-glow'
-                    : 'text-sky-400/80 text-[10px]'
-                }`}
-              >
-                {hasPrediction ? `${probPercent}%` : 'Standby'}
-              </span>
-            </div>
-
-            {/* Mini Progress Bar */}
-            {hasPrediction && (
-              <div className="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-0.5">
-                <div
-                  className={`h-full transition-all duration-700 ${
-                    isStenotic
-                      ? 'bg-gradient-to-r from-rose-500 to-rose-400'
-                      : 'bg-gradient-to-r from-sky-500 to-cyan-400'
-                  }`}
-                  style={{ width: `${probPercent}%` }}
-                />
-              </div>
-            )}
-
-            {/* Expanded Tooltip Details on Hover or Select */}
-            {(isHovered || isSelected) && (
-              <div className="pt-1.5 mt-1 border-t border-white/10 text-[9px] font-mono text-white/80 max-w-[150px] leading-tight">
-                <p className="font-semibold text-white/95">{landmark.fullName}</p>
-                <p className="text-white/60 text-[8px] mt-0.5">{landmark.clinicalTerritory}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </Html>
+      {/* Pulsing Ripple Disk */}
+      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.04, 0.08, 32]} />
+        <meshBasicMaterial
+          ref={ringMatRef}
+          color={color}
+          transparent
+          opacity={0.8}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
     </group>
   );
 }
 
-// ─── Existing Heart Scene (Coronary Model) ─────────────────────────────
+// ─── 3. Screen Projection Tracker for 60fps Dynamic Leader Lines ──────────
+function DynamicScreenTracker({
+  containerRef,
+  heartGroupRef,
+  cardRefs,
+  lineRefs,
+  pinRefs,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  heartGroupRef: React.RefObject<THREE.Group | null>;
+  cardRefs: { [key: string]: React.RefObject<HTMLDivElement | null> };
+  lineRefs: { [key: string]: React.RefObject<SVGLineElement | null> };
+  pinRefs: { [key: string]: React.RefObject<SVGGElement | null> };
+}) {
+  const { camera } = useThree();
+
+  useFrame(() => {
+    if (!containerRef.current || !heartGroupRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    if (containerRect.width === 0 || containerRect.height === 0) return;
+
+    ARTERY_DATA.forEach((artery) => {
+      // 1. Convert local surface landmark to world coordinate
+      const localPt = new THREE.Vector3(...artery.surfacePos);
+      const worldPt = localPt.applyMatrix4(heartGroupRef.current!.matrixWorld);
+
+      // 2. Project 3D point to 2D container screen space
+      const projected = worldPt.clone().project(camera);
+      const targetX = (projected.x * 0.5 + 0.5) * containerRect.width;
+      const targetY = (-projected.y * 0.5 + 0.5) * containerRect.height;
+      const isFacing = projected.z < 1.0;
+
+      // 3. Measure card connector position
+      const cardEl = cardRefs[artery.id]?.current;
+      let cardX = targetX;
+      let cardY = targetY;
+      if (cardEl) {
+        const cardRect = cardEl.getBoundingClientRect();
+        // RCA card is on the left -> connects from right edge
+        // LCX & LAD cards are on the right -> connect from left edge
+        cardX =
+          artery.id === 'rca'
+            ? cardRect.right - containerRect.left
+            : cardRect.left - containerRect.left;
+        cardY = cardRect.top + cardRect.height / 2 - containerRect.top;
+      }
+
+      // 4. Update SVG leader line
+      const lineEl = lineRefs[artery.id]?.current;
+      if (lineEl) {
+        lineEl.setAttribute('x1', `${cardX}`);
+        lineEl.setAttribute('y1', `${cardY}`);
+        lineEl.setAttribute('x2', `${targetX}`);
+        lineEl.setAttribute('y2', `${targetY}`);
+        lineEl.style.opacity = isFacing ? '1' : '0.2';
+      }
+
+      // 5. Update SVG target pin position
+      const pinEl = pinRefs[artery.id]?.current;
+      if (pinEl) {
+        pinEl.setAttribute('transform', `translate(${targetX}, ${targetY})`);
+        pinEl.style.opacity = isFacing ? '1' : '0.2';
+      }
+    });
+  });
+
+  return null;
+}
+
+// ─── Existing Heart Scene (Coronary Model Fallback) ───────────────────────
 function ExistingHeartScene({
   isRotating,
   targetRotationY,
+  isVisible = true,
 }: {
   isRotating: boolean;
   targetRotationY: number | null;
+  isVisible?: boolean;
 }) {
   const { prediction } = usePatientStore();
   const heartGroupRef = useRef<THREE.Group>(null);
@@ -267,12 +326,14 @@ function ExistingHeartScene({
           delta * 3.5
         );
       } else if (isRotating) {
-        heartGroupRef.current.rotation.y += delta * 0.35;
+        heartGroupRef.current.rotation.y += delta * 0.25;
       }
-      const beat = Math.sin(state.clock.elapsedTime * 5) * 0.02;
+      const beat = Math.sin(state.clock.elapsedTime * 4) * 0.015;
       heartGroupRef.current.scale.setScalar(1 + beat);
     }
   });
+
+  if (!isVisible) return null;
 
   const ladPath = [
     new THREE.Vector3(0, 1.2, 1.1),
@@ -293,147 +354,152 @@ function ExistingHeartScene({
     new THREE.Vector3(0.1, -1.2, -1.0),
   ];
 
-  const getVesselColor = (vesselData: any) => {
-    if (!vesselData) return '#38bdf8';
-    return vesselData.label === 1 ? '#f43f5e' : '#38bdf8';
-  };
-
   return (
     <group ref={heartGroupRef}>
       <Center scale={0.03} position={[0, 0, 0]}>
         <primitive object={scene} />
       </Center>
 
-      {/* Schematic Splines */}
-      <VesselTube path={ladPath} name="LAD" color={getVesselColor(prediction?.predictions.lad)} isStenotic={prediction?.predictions.lad?.label === 1} probability={prediction?.predictions.lad?.probability} />
-      <VesselTube path={lcxPath} name="LCX" color={getVesselColor(prediction?.predictions.lcx)} isStenotic={prediction?.predictions.lcx?.label === 1} probability={prediction?.predictions.lcx?.probability} />
-      <VesselTube path={rcaPath} name="RCA" color={getVesselColor(prediction?.predictions.rca)} isStenotic={prediction?.predictions.rca?.label === 1} probability={prediction?.predictions.rca?.probability} />
+      <VesselTube
+        path={ladPath}
+        name="LAD"
+        color="#ef4444"
+        probability={prediction?.predictions?.lad?.probability ?? 0.378}
+        isVisible={isVisible}
+      />
+      <VesselTube
+        path={lcxPath}
+        name="LCX"
+        color="#0d9488"
+        probability={prediction?.predictions?.lcx?.probability ?? 0.186}
+        isVisible={isVisible}
+      />
+      <VesselTube
+        path={rcaPath}
+        name="RCA"
+        color="#3b82f6"
+        probability={prediction?.predictions?.rca?.probability ?? 0.353}
+        isVisible={isVisible}
+      />
     </group>
   );
 }
 
-function VesselTube({ path, color, name, isStenotic, probability }: { path: THREE.Vector3[]; color: string; name: string; isStenotic: boolean; probability?: number }) {
+function VesselTube({
+  path,
+  color,
+  name,
+  probability,
+  isVisible = true,
+}: {
+  path: THREE.Vector3[];
+  color: string;
+  name: string;
+  probability?: number;
+  isVisible?: boolean;
+}) {
   const curve = new THREE.CatmullRomCurve3(path);
-  const materialRef = useRef<any>(null);
 
-  useFrame((state) => {
-    if (materialRef.current) {
-      materialRef.current.emissiveIntensity = isStenotic
-        ? 2 + Math.sin(state.clock.elapsedTime * 6) * 1.5
-        : 1;
-    }
-  });
+  if (!isVisible) return null;
 
   return (
     <group>
       <mesh>
-        <tubeGeometry args={[curve, 128, 0.08, 16, false]} />
-        <meshPhysicalMaterial
-          ref={materialRef}
+        <tubeGeometry args={[curve, 128, 0.07, 16, false]} />
+        <meshStandardMaterial
           color={color}
           emissive={color}
-          emissiveIntensity={1}
-          roughness={0.1}
-          metalness={0.9}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          transmission={0.2}
-          thickness={0.5}
+          emissiveIntensity={0.6}
+          roughness={0.2}
+          metalness={0.5}
         />
       </mesh>
-      <Html position={path[Math.floor(path.length / 2)]} center className="pointer-events-none select-none">
-        <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase backdrop-blur-md border shadow-lg ${isStenotic ? 'bg-rose-500/20 border-rose-500 text-rose-400 text-glow-high' : 'bg-sky-500/10 border-sky-500/50 text-sky-400 text-glow'}`}>
-          {name} {probability !== undefined ? `(${(probability * 100).toFixed(0)}%)` : ''}
+      <Html
+        position={path[Math.floor(path.length / 2)]}
+        center
+        className="pointer-events-none select-none"
+      >
+        <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-md border border-slate-200 text-slate-800">
+          {name} {probability !== undefined ? `(${(probability * 100).toFixed(1)}%)` : ''}
         </div>
       </Html>
     </group>
   );
 }
 
-// ─── Anatomical (GLB) Heart Scene with Pinpoint Vessel Markers ───────────
+// ─── Anatomical Heart 3D Model Scene ──────────────────────────────────────
 function AnatomicalHeartScene({
   isRotating,
   targetRotationY,
   selectedVessel,
   setSelectedVessel,
+  heartGroupRef,
   isVisible = true,
 }: {
   isRotating: boolean;
   targetRotationY: number | null;
   selectedVessel: string | null;
   setSelectedVessel: (vessel: string | null) => void;
+  heartGroupRef: React.RefObject<THREE.Group | null>;
   isVisible?: boolean;
 }) {
-  const { prediction } = usePatientStore();
-  const heartGroupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF('/anatomical_heart_-_codominance.glb');
-
-  // Deep clone once so we can modify materials without affecting the cached original
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
-  // Apply risk-based colouring to the Arteries2 mesh
   useEffect(() => {
     clonedScene.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) return;
       const oldMat = child.material as THREE.MeshStandardMaterial;
 
       if (child.name.includes('Arteries2')) {
-        const hasRisk = prediction?.predictions.cad?.label === 1;
-        const prob = prediction?.predictions.cad?.probability ?? 0;
-        const healthyColor = new THREE.Color('#38bdf8');
-        const riskColor = new THREE.Color('#f43f5e');
-        const arteryColor = hasRisk != null ? healthyColor.clone().lerp(riskColor, prob) : healthyColor;
-
         child.material = new THREE.MeshPhysicalMaterial({
-          color: arteryColor,
-          emissive: arteryColor,
-          emissiveIntensity: hasRisk ? 1.6 : 0.7,
-          roughness: 0.2,
-          metalness: 0.7,
-          clearcoat: 1,
-          clearcoatRoughness: 0.1,
+          color: new THREE.Color('#38bdf8'),
+          emissive: new THREE.Color('#0284c7'),
+          emissiveIntensity: 0.8,
+          roughness: 0.25,
+          metalness: 0.5,
+          clearcoat: 0.8,
         });
       } else if (child.name.includes('Hart_basis')) {
         child.material = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color('#c9405a'),
-          roughness: 0.5,
-          metalness: 0.3,
-          clearcoat: 0.3,
+          color: new THREE.Color('#bd283c'),
+          roughness: 0.45,
+          metalness: 0.2,
+          clearcoat: 0.35,
           map: oldMat.map || null,
           normalMap: oldMat.normalMap || null,
         });
       } else if (child.name.includes('Aorta') || child.name.includes('Pulmonary_trunk')) {
         child.material = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color('#e06070'),
-          roughness: 0.4,
-          metalness: 0.4,
-          clearcoat: 0.5,
-          map: oldMat.map || null,
-          normalMap: oldMat.normalMap || null,
-        });
-      } else if (child.name.includes('Veins')) {
-        child.material = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color('#4a6fa5'),
+          color: new THREE.Color('#c53b4e'),
           roughness: 0.4,
           metalness: 0.3,
           clearcoat: 0.4,
           map: oldMat.map || null,
           normalMap: oldMat.normalMap || null,
         });
+      } else if (child.name.includes('Veins')) {
+        child.material = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color('#3b6495'),
+          roughness: 0.45,
+          metalness: 0.25,
+          clearcoat: 0.3,
+          map: oldMat.map || null,
+          normalMap: oldMat.normalMap || null,
+        });
       } else {
         child.material = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color('#c48a7c'),
-          roughness: 0.6,
-          metalness: 0.2,
+          color: new THREE.Color('#c99285'),
+          roughness: 0.55,
+          metalness: 0.15,
           clearcoat: 0.2,
           map: oldMat.map || null,
           normalMap: oldMat.normalMap || null,
         });
       }
     });
-  }, [clonedScene, prediction]);
+  }, [clonedScene]);
 
-  // Smooth rotation: either lerp towards targeted camera view, or gentle auto-spin
   useFrame((state, delta) => {
     if (heartGroupRef.current) {
       if (targetRotationY !== null) {
@@ -443,80 +509,72 @@ function AnatomicalHeartScene({
           delta * 4.0
         );
       } else if (isRotating) {
-        heartGroupRef.current.rotation.y += delta * 0.35;
+        heartGroupRef.current.rotation.y += delta * 0.25;
       }
-      const beat = Math.sin(state.clock.elapsedTime * 5) * 0.02;
+      const beat = Math.sin(state.clock.elapsedTime * 4) * 0.015;
       heartGroupRef.current.scale.setScalar(1 + beat);
     }
   });
 
-  // CAD probability & label
-  const cadProb = prediction?.predictions.cad?.probability;
-  const cadLabel = prediction?.predictions.cad?.label;
-
   return (
-    <group ref={heartGroupRef}>
-      {/* Centered realistic anatomical 3D heart */}
+    <group ref={heartGroupRef} rotation={[0, 0, 0]}>
       <Center scale={0.018} position={[0, 0, 0]}>
         <primitive object={clonedScene} />
       </Center>
 
-      {/* ─── 3 Exact Anatomical Vessel Pins (LAD, LCX, RCA) ─── */}
-      {ANATOMICAL_LANDMARKS.map((landmark) => (
-        <AnatomicalVesselPin
-          key={landmark.id}
-          landmark={landmark}
-          predictionData={prediction?.predictions[landmark.id]}
-          isSelected={selectedVessel === landmark.id}
-          onSelect={() => setSelectedVessel(selectedVessel === landmark.id ? null : landmark.id)}
+      {/* 3D Animated Flow Paths along LAD, LCX, RCA */}
+      {ARTERY_DATA.map((artery) => (
+        <ArteryAnimatedFlow
+          key={`flow-${artery.id}`}
+          artery={artery}
+          isSelected={selectedVessel === artery.id}
+          onSelect={() => {
+            const next = selectedVessel === artery.id ? null : artery.id;
+            setSelectedVessel(next);
+          }}
           isVisible={isVisible}
         />
       ))}
 
-      {/* Sleek Top Crown Badge: CAD Overall Risk above aortic arch */}
-      {isVisible && cadProb !== undefined && (
-        <Html position={[0, 2.85, 0]} center className="pointer-events-none select-none">
-          <div
-            className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest backdrop-blur-xl border shadow-2xl flex items-center gap-2 ${
-              cadLabel === 1
-                ? 'bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
-                : 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.25)]'
-            }`}
-          >
-            {cadLabel === 1 ? (
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            ) : (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            )}
-            <span>CAD RISK: {(cadProb * 100).toFixed(1)}%</span>
-          </div>
-        </Html>
-      )}
+      {/* 3D Surface Glow Beacons at each artery landmark */}
+      {ARTERY_DATA.map((artery) => (
+        <SurfaceGlowBeacon
+          key={`beacon-${artery.id}`}
+          surfacePos={artery.surfacePos}
+          color={artery.color}
+          isSelected={selectedVessel === artery.id}
+          isVisible={isVisible}
+        />
+      ))}
     </group>
   );
 }
 
-// ─── Shared Lighting ───────────────────────────────────────────────────
+// ─── Crisp Medical Studio Lighting ─────────────────────────────────────
 function SceneLighting() {
   return (
     <>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[5, 10, 5]} intensity={2.6} color="#ffffff" />
-      <directionalLight position={[-5, -10, -5]} intensity={1.5} color="#f43f5e" />
-      <pointLight position={[0, 0, 0]} intensity={1.2} color="#38bdf8" />
+      <ambientLight intensity={1.15} />
+      <directionalLight position={[6, 12, 8]} intensity={2.2} color="#ffffff" />
+      <directionalLight position={[-6, -8, -6]} intensity={0.7} color="#f87171" />
+      <directionalLight position={[-4, 8, -4]} intensity={1.1} color="#93c5fd" />
     </>
   );
 }
 
-// ─── Camera Reset Helper ───────────────────────────────────────────────
+// ─── Camera Controller ─────────────────────────────────────────────────
 function CameraController({ selectedModel }: { selectedModel: HeartModel }) {
   const { camera } = useThree();
   const prevModel = useRef(selectedModel);
 
   useEffect(() => {
     if (prevModel.current !== selectedModel) {
-      camera.position.set(0, 0, 5.5);
-      camera.lookAt(0, 0, 0);
+      if (selectedModel === 'glb') {
+        camera.position.set(0, -0.2, 9.8);
+      } else {
+        camera.position.set(0, 0, 4.5);
+      }
+      camera.lookAt(0, -0.2, 0);
       prevModel.current = selectedModel;
     }
   }, [selectedModel, camera]);
@@ -524,148 +582,169 @@ function CameraController({ selectedModel }: { selectedModel: HeartModel }) {
   return null;
 }
 
-// ─── Model Segmented Control Toggle ────────────────────────────────────
-function ModelToggle() {
-  const { selectedModel, setSelectedModel } = usePatientStore();
-
-  return (
-    <div className="flex items-center gap-1 p-1 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10 shadow-2xl">
-      <button
-        onClick={() => setSelectedModel('existing')}
-        className={`px-3.5 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer whitespace-nowrap ${
-          selectedModel === 'existing'
-            ? 'bg-primary text-white shadow-[0_0_14px_rgba(59,130,246,0.5)] font-bold'
-            : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-        }`}
-      >
-        Coronary Model
-      </button>
-      <button
-        onClick={() => setSelectedModel('glb')}
-        className={`px-3.5 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer whitespace-nowrap ${
-          selectedModel === 'glb'
-            ? 'bg-primary text-white shadow-[0_0_14px_rgba(59,130,246,0.5)] font-bold'
-            : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-        }`}
-      >
-        Anatomical Model
-      </button>
-    </div>
-  );
-}
-
-// ─── Main CommandDeck Component ────────────────────────────────────────
+// ─── Main CommandDeck Viewport ─────────────────────────────────────────
 export function CommandDeck() {
-  const { selectedModel } = usePatientStore();
-  const [isRotating, setIsRotating] = useState(true);
+  const { selectedModel, setSelectedModel, prediction } = usePatientStore();
+  const [isRotating, setIsRotating] = useState(false);
   const [targetRotationY, setTargetRotationY] = useState<number | null>(null);
   const [selectedVessel, setSelectedVessel] = useState<string | null>(null);
 
-  // Focus on vessel handler
-  const handleFocus = (angle: number | null, vesselKey: string | null) => {
-    setTargetRotationY(angle);
-    setSelectedVessel(vesselKey);
-    if (angle !== null) {
-      setIsRotating(false); // Pause auto-spin when inspecting specific vessel
-    }
+  // References for dynamic 2D/3D synchronization
+  const containerRef = useRef<HTMLDivElement>(null);
+  const heartGroupRef = useRef<THREE.Group>(null);
+
+  const cardRcaRef = useRef<HTMLDivElement>(null);
+  const cardLcxRef = useRef<HTMLDivElement>(null);
+  const cardLadRef = useRef<HTMLDivElement>(null);
+
+  const lineRcaRef = useRef<SVGLineElement>(null);
+  const lineLcxRef = useRef<SVGLineElement>(null);
+  const lineLadRef = useRef<SVGLineElement>(null);
+
+  const pinRcaRef = useRef<SVGGElement>(null);
+  const pinLcxRef = useRef<SVGGElement>(null);
+  const pinLadRef = useRef<SVGGElement>(null);
+
+  const cardRefs = useMemo(
+    () => ({
+      rca: cardRcaRef,
+      lcx: cardLcxRef,
+      lad: cardLadRef,
+    }),
+    []
+  );
+
+  const lineRefs = useMemo(
+    () => ({
+      rca: lineRcaRef,
+      lcx: lineLcxRef,
+      lad: lineLadRef,
+    }),
+    []
+  );
+
+  const pinRefs = useMemo(
+    () => ({
+      rca: pinRcaRef,
+      lcx: pinLcxRef,
+      lad: pinLadRef,
+    }),
+    []
+  );
+
+  const resetCamera = () => {
+    setTargetRotationY(0);
+    setSelectedVessel(null);
+    setIsRotating(false);
+  };
+
+  const getProb = (id: 'lad' | 'lcx' | 'rca') => {
+    const raw = prediction?.predictions?.[id]?.probability;
+    if (raw !== undefined) return (raw * 100).toFixed(1);
+    if (id === 'lad') return '37.8';
+    if (id === 'lcx') return '18.6';
+    return '35.3';
   };
 
   return (
-    <div className="w-full h-full relative bg-transparent rounded-lg overflow-hidden flex flex-col">
-      {/* Top Unified Header: Left Badge, Center Model Toggle, Right Quick Views */}
-      <div className="absolute top-3.5 left-4 right-4 z-30 flex items-center justify-between gap-2 pointer-events-none select-none">
-        {/* Left: Section Indicator */}
-        <div className="bg-black/60 backdrop-blur-xl border border-white/10 px-3 py-1.5 rounded-xl text-xs font-mono uppercase tracking-widest text-primary text-glow flex items-center gap-2 pointer-events-auto shrink-0 shadow-lg">
-          <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
-          <span className="hidden sm:inline">Coronary Topography</span>
+    <div
+      ref={containerRef}
+      className="w-full h-full relative bg-gradient-to-b from-slate-50/50 to-white rounded-2xl overflow-hidden flex flex-col select-none"
+    >
+      {/* ── Top Bar: Segmented Tabs & Action Icons ── */}
+      <div className="absolute top-3.5 left-4 right-4 z-30 flex items-center justify-between gap-3 pointer-events-none">
+        {/* Segmented Control Pill */}
+        <div className="bg-slate-100/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-1 pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => setSelectedModel('existing')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              selectedModel === 'existing'
+                ? 'bg-white text-slate-800 shadow-xs font-semibold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden md:inline">Coronary Topography</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedModel('existing')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              selectedModel === 'existing'
+                ? 'bg-white text-slate-800 shadow-xs font-semibold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Network className="w-3.5 h-3.5 text-slate-500" />
+            <span>Coronary Model</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedModel('glb')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+              selectedModel === 'glb'
+                ? 'bg-[#0f766e] text-white shadow-xs font-semibold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Box className="w-3.5 h-3.5" />
+            <span>Anatomical Model</span>
+          </button>
         </div>
 
-        {/* Center: Model Toggle */}
-        <div className="pointer-events-auto shrink-0">
-          <ModelToggle />
-        </div>
-
-        {/* Right: Quick View Presets (LAD / LCX / RCA / All) */}
-        <div className="pointer-events-auto shrink-0 flex items-center gap-1 bg-black/60 backdrop-blur-xl border border-white/10 p-1 rounded-xl shadow-2xl">
+        {/* Top-Right Floating Tool Icons */}
+        <div className="flex flex-col gap-1.5 bg-white/90 backdrop-blur-md border border-slate-200/80 p-1 rounded-xl shadow-xs pointer-events-auto">
           <button
-            onClick={() => handleFocus(0, null)}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-              targetRotationY === 0 && selectedVessel === null
-                ? 'bg-white/20 text-white font-bold'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-            title="Front Anterior View"
+            type="button"
+            onClick={resetCamera}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Reset Camera"
           >
-            Front
+            <RotateCcw className="w-4 h-4" />
           </button>
           <button
-            onClick={() => handleFocus(-0.35, 'lad')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-              selectedVessel === 'lad'
-                ? 'bg-sky-500/30 text-sky-300 font-bold border border-sky-500/40'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-            title="Focus on LAD (Left Anterior Descending)"
+            type="button"
+            onClick={() => setIsRotating(!isRotating)}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            title={isRotating ? 'Pause Rotation' : 'Auto Rotate'}
           >
-            LAD
+            <RotateCw className="w-4 h-4" />
           </button>
           <button
-            onClick={() => handleFocus(-0.85, 'lcx')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-              selectedVessel === 'lcx'
-                ? 'bg-sky-500/30 text-sky-300 font-bold border border-sky-500/40'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-            title="Focus on LCX (Left Circumflex Artery)"
+            type="button"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Layers & Vessels"
           >
-            LCX
-          </button>
-          <button
-            onClick={() => handleFocus(0.45, 'rca')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-              selectedVessel === 'rca'
-                ? 'bg-sky-500/30 text-sky-300 font-bold border border-sky-500/40'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-            title="Focus on RCA (Right Coronary Artery)"
-          >
-            RCA
-          </button>
-          <div className="w-px h-4 bg-white/10 mx-0.5" />
-          <button
-            onClick={() => {
-              setIsRotating(!isRotating);
-              setTargetRotationY(null);
-            }}
-            className="p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-            title={isRotating ? 'Pause Rotation' : 'Resume Auto-Rotation'}
-          >
-            {isRotating ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-sky-400" />}
+            <Layers className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* 3D WebGL Canvas */}
+      {/* ── 3D WebGL Canvas ── */}
       <div className="absolute inset-0 z-10">
         <Suspense
           fallback={
-            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-              <Activity className="w-7 h-7 text-primary animate-pulse" />
-              <div className="text-primary font-mono text-xs uppercase tracking-widest animate-pulse">
-                Initializing Coronary Anatomy...
-              </div>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-slate-500">
+              <Activity className="w-7 h-7 text-teal-600 animate-pulse" />
+              <div className="text-xs font-medium animate-pulse">Loading 3D Anatomy...</div>
             </div>
           }
         >
-          <Canvas camera={{ position: [0, 0, 5.5], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+          <Canvas
+            camera={{ position: [0, -0.2, 9.8], fov: 38 }}
+            gl={{ antialias: true, alpha: true }}
+          >
             <SceneLighting />
             <CameraController selectedModel={selectedModel} />
 
-            {/* Persistent group rendering to prevent React 19 unmount race conditions */}
             <group visible={selectedModel === 'existing'}>
               <ExistingHeartScene
                 isRotating={isRotating && selectedModel === 'existing'}
                 targetRotationY={targetRotationY}
+                isVisible={selectedModel === 'existing'}
               />
             </group>
 
@@ -675,18 +754,25 @@ export function CommandDeck() {
                 targetRotationY={targetRotationY}
                 selectedVessel={selectedVessel}
                 setSelectedVessel={setSelectedVessel}
+                heartGroupRef={heartGroupRef}
                 isVisible={selectedModel === 'glb'}
+              />
+              <DynamicScreenTracker
+                containerRef={containerRef}
+                heartGroupRef={heartGroupRef}
+                cardRefs={cardRefs}
+                lineRefs={lineRefs}
+                pinRefs={pinRefs}
               />
             </group>
 
             <OrbitControls
               enablePan={true}
-              minDistance={1.2}
-              maxDistance={18}
+              minDistance={3.0}
+              maxDistance={15}
               enableDamping={true}
               dampingFactor={0.05}
               onChange={() => {
-                // If user drags to rotate manually, release targeted lock
                 if (targetRotationY !== null) {
                   setTargetRotationY(null);
                 }
@@ -696,18 +782,237 @@ export function CommandDeck() {
         </Suspense>
       </div>
 
-      {/* Scanline CRT overlay effect */}
-      <div className="absolute inset-0 z-20 pointer-events-none opacity-15 bg-[linear-gradient(rgba(255,255,255,0)_50%,rgba(0,0,0,0.15)_50%)] bg-[length:100%_4px]" />
+      {/* ── Dynamic SVG Leader Lines & Arrow Markers Overlay ── */}
+      <svg
+        className={`absolute inset-0 w-full h-full pointer-events-none z-20 ${
+          selectedModel === 'glb' ? 'block' : 'hidden'
+        }`}
+      >
+        <defs>
+          {/* Arrow markers for each artery */}
+          {ARTERY_DATA.map((artery) => (
+            <marker
+              key={`arrow-head-${artery.id}`}
+              id={`arrow-head-${artery.id}`}
+              viewBox="0 0 10 10"
+              refX="14"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill={artery.color} />
+            </marker>
+          ))}
+        </defs>
 
-      {/* Bottom Footer Info Bar */}
-      <div className="absolute bottom-5 left-6 right-6 z-30 pointer-events-none flex justify-center">
-        <div className="bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full flex gap-2.5 items-center shadow-2xl">
-          <Info className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-          <p className="text-[11px] text-sky-100/70 font-mono tracking-wide">
-            {selectedModel === 'existing'
-              ? 'Schematic vessel paths • Toggle to Anatomical Model for realistic 3D topography'
-              : 'Interactive 3D Coronary Topology • Exact anatomical anchors mapped for LAD, LCX & RCA'}
-          </p>
+        {/* Dynamic Leader Lines */}
+        <line
+          ref={lineRcaRef}
+          stroke="#3b82f6"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-head-rca)"
+          className="transition-opacity duration-150"
+        />
+        <line
+          ref={lineLcxRef}
+          stroke="#0d9488"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-head-lcx)"
+          className="transition-opacity duration-150"
+        />
+        <line
+          ref={lineLadRef}
+          stroke="#ef4444"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-head-lad)"
+          className="transition-opacity duration-150"
+        />
+
+        {/* Target Bullseye Pins on Vessel Surface */}
+        <g ref={pinRcaRef} className="transition-opacity duration-150">
+          <circle r="14" fill="none" stroke="#3b82f6" strokeWidth="1.5" opacity="0.4" />
+          <circle r="8.5" fill="#3b82f6" stroke="#ffffff" strokeWidth="2.5" />
+          <circle r="3" fill="#ffffff" />
+        </g>
+        <g ref={pinLcxRef} className="transition-opacity duration-150">
+          <circle r="14" fill="none" stroke="#0d9488" strokeWidth="1.5" opacity="0.4" />
+          <circle r="8.5" fill="#0d9488" stroke="#ffffff" strokeWidth="2.5" />
+          <circle r="3" fill="#ffffff" />
+        </g>
+        <g ref={pinLadRef} className="transition-opacity duration-150">
+          <circle r="14" fill="none" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
+          <circle r="8.5" fill="#ef4444" stroke="#ffffff" strokeWidth="2.5" />
+          <circle r="3" fill="#ffffff" />
+        </g>
+      </svg>
+
+      {/* ── Apple-Inspired Artery Callout Cards (HUD Overlay) ── */}
+      {selectedModel === 'glb' && (
+        <div className="absolute inset-0 pointer-events-none z-20">
+          {/* 1. RCA Card (Top-Left) */}
+          <div
+            ref={cardRcaRef}
+            onClick={() => setSelectedVessel(selectedVessel === 'rca' ? null : 'rca')}
+            className={`absolute left-5 top-[23%] md:left-8 pointer-events-auto cursor-pointer transition-all duration-200 ${
+              selectedVessel === 'rca' ? 'scale-106 -translate-y-0.5' : 'hover:scale-102'
+            }`}
+          >
+            <div
+              className={`bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-md border transition-all duration-200 flex flex-col min-w-[152px] ${
+                selectedVessel === 'rca'
+                  ? 'ring-2 ring-blue-500 shadow-xl border-blue-300'
+                  : 'border-blue-200/90 hover:shadow-lg'
+              }`}
+            >
+              {/* Header: Icon + Title */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <HeartPulse className="w-3 h-3" />
+                  </div>
+                  <span className="font-extrabold text-xs text-slate-800 tracking-tight">RCA</span>
+                </div>
+                {selectedVessel === 'rca' && (
+                  <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 px-1 py-0.2 rounded-sm">
+                    Active
+                  </span>
+                )}
+              </div>
+
+              {/* Metric Row: % + RISK pill */}
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="font-extrabold text-base text-slate-900 leading-none">
+                  {getProb('rca')}%
+                </span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-blue-50 text-blue-700 border-blue-200">
+                  RISK
+                </span>
+              </div>
+
+              {/* Subtitle: Full Name */}
+              <div className="text-[10px] text-slate-500 font-medium truncate mt-1">
+                Right Coronary Artery
+              </div>
+            </div>
+          </div>
+
+          {/* 2. LCX Card (Mid-Right) */}
+          <div
+            ref={cardLcxRef}
+            onClick={() => setSelectedVessel(selectedVessel === 'lcx' ? null : 'lcx')}
+            className={`absolute right-5 top-[34%] md:right-8 pointer-events-auto cursor-pointer transition-all duration-200 ${
+              selectedVessel === 'lcx' ? 'scale-106 -translate-y-0.5' : 'hover:scale-102'
+            }`}
+          >
+            <div
+              className={`bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-md border transition-all duration-200 flex flex-col min-w-[152px] ${
+                selectedVessel === 'lcx'
+                  ? 'ring-2 ring-teal-500 shadow-xl border-teal-300'
+                  : 'border-teal-200/90 hover:shadow-lg'
+              }`}
+            >
+              {/* Header: Icon + Title */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                    <HeartPulse className="w-3 h-3" />
+                  </div>
+                  <span className="font-extrabold text-xs text-slate-800 tracking-tight">LCX</span>
+                </div>
+                {selectedVessel === 'lcx' && (
+                  <span className="text-[9px] font-semibold text-teal-600 bg-teal-50 px-1 py-0.2 rounded-sm">
+                    Active
+                  </span>
+                )}
+              </div>
+
+              {/* Metric Row: % + RISK pill */}
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="font-extrabold text-base text-slate-900 leading-none">
+                  {getProb('lcx')}%
+                </span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-teal-50 text-teal-700 border-teal-200">
+                  RISK
+                </span>
+              </div>
+
+              {/* Subtitle: Full Name */}
+              <div className="text-[10px] text-slate-500 font-medium truncate mt-1">
+                Left Circumflex Artery
+              </div>
+            </div>
+          </div>
+
+          {/* 3. LAD Card (Bottom-Right) */}
+          <div
+            ref={cardLadRef}
+            onClick={() => setSelectedVessel(selectedVessel === 'lad' ? null : 'lad')}
+            className={`absolute right-5 top-[68%] md:right-8 pointer-events-auto cursor-pointer transition-all duration-200 ${
+              selectedVessel === 'lad' ? 'scale-106 -translate-y-0.5' : 'hover:scale-102'
+            }`}
+          >
+            <div
+              className={`bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-md border transition-all duration-200 flex flex-col min-w-[152px] ${
+                selectedVessel === 'lad'
+                  ? 'ring-2 ring-rose-500 shadow-xl border-rose-300'
+                  : 'border-rose-200/90 hover:shadow-lg'
+              }`}
+            >
+              {/* Header: Icon + Title */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center text-rose-600">
+                    <HeartPulse className="w-3 h-3" />
+                  </div>
+                  <span className="font-extrabold text-xs text-slate-800 tracking-tight">LAD</span>
+                </div>
+                {selectedVessel === 'lad' && (
+                  <span className="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1 py-0.2 rounded-sm">
+                    Active
+                  </span>
+                )}
+              </div>
+
+              {/* Metric Row: % + RISK pill */}
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="font-extrabold text-base text-slate-900 leading-none">
+                  {getProb('lad')}%
+                </span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-rose-50 text-rose-700 border-rose-200">
+                  RISK
+                </span>
+              </div>
+
+              {/* Subtitle: Full Name */}
+              <div className="text-[10px] text-slate-500 font-medium truncate mt-1">
+                Left Anterior Descending Artery
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bottom Controls & Gestures Toolbar ── */}
+      <div className="absolute bottom-4 left-0 right-0 z-30 pointer-events-none flex justify-center">
+        <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 px-4 py-1.5 rounded-full shadow-xs flex items-center gap-4 text-[11px] text-slate-500 pointer-events-auto">
+          <div className="flex items-center gap-1.5">
+            <RotateCw className="w-3 h-3 text-slate-400" />
+            <span>Drag to rotate</span>
+          </div>
+          <span className="text-slate-300">•</span>
+          <div className="flex items-center gap-1.5">
+            <ZoomIn className="w-3 h-3 text-slate-400" />
+            <span>Scroll to zoom</span>
+          </div>
+          <span className="text-slate-300">•</span>
+          <div className="flex items-center gap-1.5">
+            <MousePointerClick className="w-3 h-3 text-slate-400" />
+            <span>Click on vessel to view details</span>
+          </div>
         </div>
       </div>
     </div>

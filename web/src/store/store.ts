@@ -25,11 +25,11 @@ export const usePatientStore = create<PatientState>((set) => ({
   prediction: null,
   isLoading: false,
   error: null,
-  selectedModel: 'glb',
+  selectedModel: 'existing',
   setPatientData: (data) => set((state) => ({ patient: { ...state.patient, ...data } })),
   setPrediction: (prediction) => set({ prediction, error: null }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error, isLoading: false }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
-  reset: () => set({ patient: {}, prediction: null, error: null, isLoading: false, selectedModel: 'glb' })
+  reset: () => set({ patient: {}, prediction: null, error: null, isLoading: false, selectedModel: 'existing' })
 }))
