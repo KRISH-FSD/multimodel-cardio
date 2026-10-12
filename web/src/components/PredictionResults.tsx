@@ -1,25 +1,15 @@
-import { useState } from 'react';
+import React from 'react';
 import { usePatientStore } from '../store/store';
 import type { ArteryId } from '../store/store';
 import { ShapWaterfall } from './ShapWaterfall';
 import {
   BarChart3,
-  Info,
   AlertTriangle,
   CheckCircle2,
   Activity,
   Heart,
-  GitBranch,
   ShieldAlert,
-  Compass,
-  ArrowRight,
-  ClipboardCopy,
-  Printer,
-  FileCheck,
   Stethoscope,
-  Pill,
-  Target,
-  AlertCircle,
   Eye,
 } from 'lucide-react';
 
@@ -30,20 +20,15 @@ export function PredictionResults() {
     isLoading,
     focusedVessel,
     setFocusedVessel,
-    activeResultTab,
-    setActiveResultTab,
-    patient,
   } = usePatientStore();
 
-  const [copiedNote, setCopiedNote] = useState(false);
+  // Calculated values derived directly from model predictions
+  const cadProb = prediction?.predictions?.cad?.probability ?? 0;
+  const cadLabel = prediction?.predictions?.cad?.label ?? (cadProb >= 0.5 ? 1 : 0);
 
-  // Baseline values if analysis hasn't been triggered yet, matching reference design
-  const cadProb = prediction?.predictions?.cad?.probability ?? 0.569;
-  const cadLabel = prediction?.predictions?.cad?.label ?? 1;
-
-  const ladProb = prediction?.predictions?.lad?.probability ?? 0.378;
-  const lcxProb = prediction?.predictions?.lcx?.probability ?? 0.186;
-  const rcaProb = prediction?.predictions?.rca?.probability ?? 0.353;
+  const ladProb = prediction?.predictions?.lad?.probability ?? 0;
+  const lcxProb = prediction?.predictions?.lcx?.probability ?? 0;
+  const rcaProb = prediction?.predictions?.rca?.probability ?? 0;
 
   const isHighRisk = cadLabel === 1 || cadProb >= 0.5;
 
@@ -66,81 +51,41 @@ export function PredictionResults() {
     }
   };
 
-  const handleCopySummary = () => {
-    const noteText = `CARDIOVISION CLINICAL DECISION SUMMARY
-Patient: PRN-1042 (Age: ${patient.Age ?? 61}, Sex: ${patient.Sex === 0 ? 'F' : 'M'})
-Date: ${new Date().toLocaleDateString()}
-------------------------------------------------
-OVERALL CAD RISK: ${(cadProb * 100).toFixed(1)}% (${isHighRisk ? 'HIGH RISK' : 'LOW RISK'})
-- LAD Territory: ${(ladProb * 100).toFixed(1)}% (${ladTier.label})
-- LCX Territory: ${(lcxProb * 100).toFixed(1)}% (${lcxTier.label})
-- RCA Territory: ${(rcaProb * 100).toFixed(1)}% (${rcaTier.label})
-
-CLINICAL RECOMMENDATIONS (ACC/AHA 2024 Criteria):
-1. Diagnostic Imaging: CCTA / Invasive Coronary Angiogram recommended for anterior (LAD) and inferior (RCA) ischemia.
-2. Pharmacotherapy: Initiate High-Intensity Statin (Atorvastatin 40-80mg QD) + Enteric Aspirin 81mg QD.
-3. Targets: LDL Goal < 55 mg/dL (Current: ${patient.LDL ?? 167} mg/dL), BP Target < 130/80 mmHg.
-4. Referral: Cardiology consultation within 7-14 days.`;
-
-    navigator.clipboard.writeText(noteText);
-    setCopiedNote(true);
-    setTimeout(() => setCopiedNote(false), 2500);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
+  // Determine highest risk vessel for clinical summary
+  const highestVessel = React.useMemo(() => {
+    const vessels = [
+      { name: 'LAD (Anterior)', prob: ladProb },
+      { name: 'RCA (Inferior)', prob: rcaProb },
+      { name: 'LCX (Lateral)', prob: lcxProb },
+    ];
+    vessels.sort((a, b) => b.prob - a.prob);
+    return vessels[0];
+  }, [ladProb, rcaProb, lcxProb]);
 
   return (
-    <div className="flex flex-col h-full justify-between gap-2 select-none text-slate-800">
-      {/* ── 1. Header with Mode Switcher ── */}
+    <div className="flex flex-col h-full justify-start gap-2.5 select-none text-slate-800 relative">
+      {/* ── 1. Clean Header (No Collliding Badges or Duplicate Tabs) ── */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-200/80">
-            <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
+          <div className="w-7 h-7 rounded-lg bg-teal-50 text-[#0f766e] flex items-center justify-center shrink-0 border border-teal-200/80">
+            <BarChart3 className="w-3.5 h-3.5 text-[#0f766e]" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-xs font-bold text-slate-900 leading-tight">Analysis Results</h2>
-              <span className="text-[9px] font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.2 rounded border border-blue-200/60 font-mono">
-                AI Engine
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-500 leading-none mt-0.5">Multimodal risk & decision guide</p>
+            <h2 className="text-xs font-bold text-slate-900 leading-tight">Cardiovascular Risk Analysis</h2>
+            <p className="text-[10px] text-slate-500 leading-none mt-0.5">Multimodal AI Ensemble Output</p>
           </div>
         </div>
 
-        {/* View Switcher: Assessment vs Clinical Guide */}
-        <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200/70">
-          <button
-            type="button"
-            onClick={() => setActiveResultTab('assessment')}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-              activeResultTab === 'assessment'
-                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <BarChart3 className="w-3 h-3 text-blue-600" />
-            <span>Risk View</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveResultTab('guide')}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer relative ${
-              activeResultTab === 'guide'
-                ? 'bg-[#0f766e] text-white shadow-2xs font-bold'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Compass className="w-3 h-3 text-teal-300" />
-            <span>Care Guide</span>
-            {isHighRisk && (
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            )}
-          </button>
-        </div>
+        {/* Status Badge */}
+        <span
+          className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border font-mono ${
+            prediction
+              ? 'bg-teal-50 text-teal-800 border-teal-200'
+              : 'bg-slate-100 text-slate-500 border-slate-200'
+          }`}
+        >
+          {prediction ? 'AI Evaluated' : 'Standby'}
+        </span>
       </div>
 
       {/* Error Banner */}
@@ -151,84 +96,138 @@ CLINICAL RECOMMENDATIONS (ACC/AHA 2024 Criteria):
         </div>
       )}
 
-      {/* Loading Banner */}
+      {/* ── Frosted Glassmorphism AI Ensemble Computing Overlay ── */}
       {isLoading && (
-        <div className="bg-teal-50 border border-teal-200 text-teal-800 px-2.5 py-1.5 rounded-xl text-[10px] flex items-center gap-2 animate-pulse shrink-0">
-          <div className="w-3 h-3 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
-          <span className="font-medium">Evaluating multi-branch coronary risk & SHAP...</span>
+        <div className="absolute inset-0 z-40 backdrop-blur-md bg-white/85 rounded-2xl p-5 flex flex-col items-center justify-center gap-3.5 text-center animate-in fade-in duration-200 select-none shadow-sm">
+          <div className="relative w-14 h-14 flex items-center justify-center">
+            <div
+              className="absolute inset-0 rounded-2xl bg-teal-500/10 border-2 border-teal-500/40 animate-spin"
+              style={{ animationDuration: '3s' }}
+            />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0f766e] to-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/25">
+              <Activity className="w-5 h-5 animate-pulse" />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 font-mono tracking-wider uppercase">
+              AI Ensemble Computing
+            </span>
+            <h3 className="text-xs font-bold text-slate-900 mt-1">Evaluating CAD Models</h3>
+            <p className="text-[10px] text-slate-500 max-w-[220px] leading-tight">
+              Processing gradient-boosted trees & calculating TreeSHAP values...
+            </p>
+          </div>
+
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-teal-500 via-blue-500 to-[#0f766e] rounded-full animate-pulse w-full" />
+          </div>
+
+          <div className="space-y-1 text-[9px] text-slate-400 font-mono">
+            <div>• Multi-Model XGBoost / CatBoost</div>
+            <div>• Coronary Branch Calibration</div>
+            <div>• SHAP Feature Attribution</div>
+          </div>
         </div>
       )}
 
-      {/* ── 2. Tab Content ── */}
-      {activeResultTab === 'assessment' ? (
-        /* ══════════ TAB A: RISK ASSESSMENT VIEW ══════════ */
-        <div className="flex-1 min-h-0 flex flex-col justify-between gap-2 animate-in fade-in-50 duration-150">
-          {/* Card A1: Overall CAD Risk */}
+      {/* ── 2. Main Content: Empty State vs Analytical Report ── */}
+      {!prediction ? (
+        /* ══════════ EMPTY STATE: AWAITING CLINICAL INPUT ══════════ */
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center p-4 bg-slate-50/70 border border-dashed border-slate-200/90 rounded-2xl gap-3 animate-in fade-in-50 duration-200">
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-[#0f766e] shadow-2xs">
+            <Stethoscope className="w-6 h-6 stroke-[2.2]" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-slate-900">Awaiting Clinical Evaluation</h3>
+            <p className="text-[10px] text-slate-500 leading-relaxed max-w-[240px]">
+              Enter patient clinical parameters on the left and click{' '}
+              <span className="font-bold text-[#0f766e]">Run Cardiovascular Analysis</span> to generate
+              multi-branch CAD risk predictions and SHAP explainability.
+            </p>
+          </div>
+
+          {/* Structured Output Pipeline Preview */}
+          <div className="w-full bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs flex flex-col gap-2 text-left mt-1">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+              Predicted Outputs:
+            </span>
+            <div className="space-y-1.5 text-[10px] text-slate-600">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                <span>Overall CAD Risk Score (AI Ensemble)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                <span>LAD, LCX & RCA Branch Stenosis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                <span>SHAP Feature Attribution Waterfall</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                <span>Clinical Decision Support Metrics</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-[9px] text-slate-400 font-medium">
+            Tip: Use "High Risk Sample" or "Normal Sample" to test instantly
+          </div>
+        </div>
+      ) : (
+        /* ══════════ UNIFIED ANALYTICAL REPORT ══════════ */
+        <div className="flex flex-col gap-2.5 animate-in fade-in-50 duration-150">
+          {/* ── Card 1: Overall CAD Risk Score (Redesigned & Clean) ── */}
           <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 shadow-2xs flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
-                <span>Overall CAD Risk Score</span>
-                <Info className="w-3 h-3 text-slate-400" />
-              </div>
-
-              {/* Status Badge */}
+              <span className="text-[11px] font-bold text-slate-700">Overall CAD Risk Score</span>
               {isHighRisk ? (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
                   <AlertTriangle className="w-3 h-3 text-rose-600" />
                   <span>High Risk Detected</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                   <span>Normal / Low Risk</span>
                 </div>
               )}
             </div>
 
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between mt-0.5">
               <div className="text-3xl font-extrabold tracking-tight text-slate-900 font-mono">
                 {(cadProb * 100).toFixed(1)}%
               </div>
-
-              {/* Quick shortcut to Clinical Guide */}
-              <button
-                type="button"
-                onClick={() => setActiveResultTab('guide')}
-                className="flex items-center gap-1 text-[10px] font-semibold text-teal-700 hover:text-teal-900 bg-teal-50/80 hover:bg-teal-100/80 px-2 py-1 rounded-lg border border-teal-200/70 transition-all cursor-pointer"
-              >
-                <span>Clinical Guide</span>
-                <ArrowRight className="w-2.5 h-2.5" />
-              </button>
+              <span className="text-[10px] font-semibold text-slate-500">
+                {isHighRisk ? 'Severe Ischemia Likely' : 'Low Ischemia Likelihood'}
+              </span>
             </div>
 
-            {/* Progress Bar with Tier Indicators */}
-            <div className="space-y-0.5">
+            {/* Continuous Gradient Progress Gauge */}
+            <div className="space-y-1">
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-700 rounded-full ${
-                    isHighRisk
-                      ? 'bg-gradient-to-r from-rose-400 to-rose-500'
-                      : 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                  }`}
-                  style={{ width: `${Math.min(100, cadProb * 100)}%` }}
+                  className="h-full transition-all duration-700 rounded-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500"
+                  style={{ width: `${Math.min(100, Math.max(4, cadProb * 100))}%` }}
                 />
               </div>
               <div className="flex justify-between text-[8px] font-mono text-slate-400 px-0.5">
-                <span>0% (Low)</span>
-                <span>35% (Mod)</span>
-                <span>50% (High)</span>
-                <span>100%</span>
+                <span>Low (&lt;35%)</span>
+                <span>Moderate (35-49%)</span>
+                <span>High (≥50%)</span>
               </div>
             </div>
           </div>
 
-          {/* Card A2: 3D-Linked Vessel Breakdown */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium px-0.5">
+          {/* ── Card 2: 3D-Linked Coronary Vessel Breakdown ── */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-[10px] px-0.5">
               <span className="font-semibold text-slate-700 flex items-center gap-1">
-                <Heart className="w-3 h-3 text-rose-500" /> Vessel Breakdown
+                <Heart className="w-3 h-3 text-rose-500" /> Coronary Branch Breakdown
               </span>
-              <span className="text-[9px] text-slate-400 font-mono">Click card to highlight in 3D</span>
+              <span className="text-[9px] text-slate-400 font-mono">3D Synchronized</span>
             </div>
 
             <div className="grid grid-cols-3 gap-1.5">
@@ -243,22 +242,14 @@ CLINICAL RECOMMENDATIONS (ACC/AHA 2024 Criteria):
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Heart className="w-3 h-3 text-rose-500" />
-                    <span className="text-xs font-bold text-slate-900">LAD</span>
-                  </div>
+                  <span className="text-xs font-bold text-rose-600">LAD</span>
                   {focusedVessel === 'lad' && (
                     <Eye className="w-2.5 h-2.5 text-rose-600 animate-pulse" />
                   )}
                 </div>
 
-                <div className="flex items-baseline gap-0.5 font-mono">
-                  <span className="text-sm font-extrabold text-slate-900">
-                    {(ladProb * 100).toFixed(1)}%
-                  </span>
-                  <span className="text-[8px] text-slate-400 font-sans font-medium uppercase">
-                    Risk
-                  </span>
+                <div className="font-mono text-sm font-extrabold text-slate-900">
+                  {(ladProb * 100).toFixed(1)}%
                 </div>
 
                 <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
@@ -284,27 +275,19 @@ CLINICAL RECOMMENDATIONS (ACC/AHA 2024 Criteria):
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <GitBranch className="w-3 h-3 text-teal-600" />
-                    <span className="text-xs font-bold text-slate-900">LCX</span>
-                  </div>
+                  <span className="text-xs font-bold text-[#0f766e]">LCX</span>
                   {focusedVessel === 'lcx' && (
-                    <Eye className="w-2.5 h-2.5 text-teal-600 animate-pulse" />
+                    <Eye className="w-2.5 h-2.5 text-[#0f766e] animate-pulse" />
                   )}
                 </div>
 
-                <div className="flex items-baseline gap-0.5 font-mono">
-                  <span className="text-sm font-extrabold text-slate-900">
-                    {(lcxProb * 100).toFixed(1)}%
-                  </span>
-                  <span className="text-[8px] text-slate-400 font-sans font-medium uppercase">
-                    Risk
-                  </span>
+                <div className="font-mono text-sm font-extrabold text-slate-900">
+                  {(lcxProb * 100).toFixed(1)}%
                 </div>
 
                 <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-teal-600 rounded-full transition-all duration-500"
+                    className="h-full bg-[#0f766e] rounded-full transition-all duration-500"
                     style={{ width: `${lcxProb * 100}%` }}
                   />
                 </div>
@@ -325,22 +308,14 @@ CLINICAL RECOMMENDATIONS (ACC/AHA 2024 Criteria):
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Activity className="w-3 h-3 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-900">RCA</span>
-                  </div>
+                  <span className="text-xs font-bold text-blue-600">RCA</span>
                   {focusedVessel === 'rca' && (
                     <Eye className="w-2.5 h-2.5 text-blue-600 animate-pulse" />
                   )}
                 </div>
 
-                <div className="flex items-baseline gap-0.5 font-mono">
-                  <span className="text-sm font-extrabold text-slate-900">
-                    {(rcaProb * 100).toFixed(1)}%
-                  </span>
-                  <span className="text-[8px] text-slate-400 font-sans font-semibold uppercase">
-                    Risk
-                  </span>
+                <div className="font-mono text-sm font-extrabold text-slate-900">
+                  {(rcaProb * 100).toFixed(1)}%
                 </div>
 
                 <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
@@ -357,111 +332,35 @@ CLINICAL RECOMMENDATIONS (ACC/AHA 2024 Criteria):
             </div>
           </div>
 
-          {/* Card A3: Explainability (SHAP Waterfall) */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 shadow-2xs flex-1 flex flex-col min-h-[140px]">
+          {/* ── Card 3: Clinical Decision Indicators Bar ── */}
+          <div className="bg-slate-50/90 rounded-xl border border-slate-200/80 p-2 grid grid-cols-3 gap-2 text-[10px]">
+            <div className="flex flex-col">
+              <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wider">
+                Primary Territory
+              </span>
+              <span className="font-bold text-slate-800 truncate">{highestVessel.name}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wider">
+                Stenosis Suspect
+              </span>
+              <span className={`font-bold truncate ${isHighRisk ? 'text-rose-600' : 'text-emerald-700'}`}>
+                {isHighRisk ? 'Significant' : 'Non-Obstructive'}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wider">
+                ACC/AHA Action
+              </span>
+              <span className="font-bold text-teal-800 truncate">
+                {isHighRisk ? 'CCTA / Angio' : 'Routine Care'}
+              </span>
+            </div>
+          </div>
+
+          {/* ── Card 4: Explainability (TreeSHAP Waterfall) ── */}
+          <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 shadow-2xs">
             <ShapWaterfall />
-          </div>
-        </div>
-      ) : (
-        /* ══════════ TAB B: CLINICAL ACTION GUIDE (CDS PROTOCOL) ══════════ */
-        <div className="flex-1 min-h-0 flex flex-col justify-between gap-1.5 animate-in fade-in-50 duration-150 text-[10px]">
-          {/* Guide Header Banner */}
-          <div className="bg-teal-50/90 border border-teal-200/90 rounded-xl p-2 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Stethoscope className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-              <div>
-                <div className="font-bold text-teal-900 leading-tight">ACC/AHA Clinical Action Guide</div>
-                <div className="text-[9px] text-teal-700">Patient-specific risk mitigation pathway</div>
-              </div>
-            </div>
-            <span className="text-[9px] font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded font-mono">
-              PRIORITY
-            </span>
-          </div>
-
-          {/* 4 Categorized Action Recommendations */}
-          <div className="space-y-1.5 flex-1 min-h-0 flex flex-col justify-around">
-            {/* 1. Diagnostic Imaging */}
-            <div className="bg-white p-2 rounded-xl border border-slate-200/90 shadow-2xs flex items-start gap-2">
-              <div className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200 mt-0.5">
-                <Heart className="w-3 h-3 text-rose-600" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-slate-900 leading-tight">Coronary CTA or Angiography</div>
-                <div className="text-[9px] text-slate-500 mt-0.5 leading-tight">
-                  High LAD ({(ladProb * 100).toFixed(1)}%) & RCA ({(rcaProb * 100).toFixed(1)}%) suspicion. CCTA with FFR-CT recommended within 14 days.
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Pharmacotherapy */}
-            <div className="bg-white p-2 rounded-xl border border-slate-200/90 shadow-2xs flex items-start gap-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-200 mt-0.5">
-                <Pill className="w-3 h-3 text-indigo-600" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-slate-900 leading-tight">High-Intensity Statin + Antiplatelet</div>
-                <div className="text-[9px] text-slate-500 mt-0.5 leading-tight">
-                  Atorvastatin 40-80mg QD (Current LDL: {patient.LDL ?? 167} mg/dL) + Aspirin 81mg enteric daily.
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Biomarker Targets */}
-            <div className="bg-white p-2 rounded-xl border border-slate-200/90 shadow-2xs flex items-start gap-2">
-              <div className="w-6 h-6 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 border border-teal-200 mt-0.5">
-                <Target className="w-3 h-3 text-teal-600" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-slate-900 leading-tight">Target Goals (LDL &lt; 55 mg/dL)</div>
-                <div className="text-[9px] text-slate-500 mt-0.5 leading-tight">
-                  Require &gt;50% LDL reduction. Maintain BP &lt; 130/80 mmHg (Current: {patient.BP ?? 123} mmHg).
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Urgent Red Flags */}
-            <div className="bg-white p-2 rounded-xl border border-slate-200/90 shadow-2xs flex items-start gap-2">
-              <div className="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200 mt-0.5">
-                <AlertCircle className="w-3 h-3 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-slate-900 leading-tight">ACS Red Flags & ER Counseling</div>
-                <div className="text-[9px] text-slate-500 mt-0.5 leading-tight">
-                  Educate patient on nitroglycerin 0.4mg PRN. Advise immediate 911 activation if chest pain &gt; 5 min.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Toolbar */}
-          <div className="grid grid-cols-2 gap-1.5 pt-0.5 shrink-0">
-            <button
-              type="button"
-              onClick={handleCopySummary}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-semibold transition-all cursor-pointer shadow-2xs"
-            >
-              {copiedNote ? (
-                <>
-                  <FileCheck className="w-3 h-3 text-emerald-600" />
-                  <span className="text-emerald-700">Copied Note!</span>
-                </>
-              ) : (
-                <>
-                  <ClipboardCopy className="w-3 h-3 text-slate-500" />
-                  <span>Copy Summary</span>
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-[10px] font-semibold transition-all cursor-pointer shadow-2xs"
-            >
-              <Printer className="w-3 h-3 text-white/80" />
-              <span>Print Referral</span>
-            </button>
           </div>
         </div>
       )}

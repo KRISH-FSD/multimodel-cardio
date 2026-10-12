@@ -15,6 +15,7 @@ import {
   Eye,
   EyeOff,
   Activity,
+  Heart,
 } from 'lucide-react';
 
 // ─── Artery Pathway & Anatomical Landmark Definitions ─────────────────────
@@ -441,6 +442,7 @@ function AnatomicalHeartScene({
   heartGroupRef,
   beaconRefs,
   isVisible = true,
+  hasPrediction = false,
 }: {
   isRotating: boolean;
   targetRotationY: number | null;
@@ -449,6 +451,7 @@ function AnatomicalHeartScene({
   heartGroupRef: React.RefObject<THREE.Group | null>;
   beaconRefs: { [key: string]: React.RefObject<THREE.Group | null> };
   isVisible?: boolean;
+  hasPrediction?: boolean;
 }) {
   const { scene } = useGLTF('/anatomical_heart_-_codominance.glb');
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
@@ -537,29 +540,31 @@ function AnatomicalHeartScene({
         <primitive object={clonedScene} />
       </group>
 
-      {/* 3D Animated Flow Paths along LAD, LCX, RCA */}
-      {ARTERY_DATA.map((artery) => (
-        <ArteryAnimatedFlow
-          key={`flow-${artery.id}`}
-          artery={artery}
-          isSelected={selectedVessel === artery.id}
-          onSelect={() => handleSelectVessel(artery.id)}
-          isVisible={isVisible}
-        />
-      ))}
+      {/* 3D Animated Flow Paths along LAD, LCX, RCA (Rendered only after prediction) */}
+      {hasPrediction &&
+        ARTERY_DATA.map((artery) => (
+          <ArteryAnimatedFlow
+            key={`flow-${artery.id}`}
+            artery={artery}
+            isSelected={selectedVessel === artery.id}
+            onSelect={() => handleSelectVessel(artery.id)}
+            isVisible={isVisible}
+          />
+        ))}
 
-      {/* 3D Surface Glow Beacons anchored to exact mesh vertices */}
-      {ARTERY_DATA.map((artery) => (
-        <SurfaceGlowBeacon
-          key={`beacon-${artery.id}`}
-          beaconRef={beaconRefs[artery.id]}
-          surfacePos={artery.surfacePos}
-          color={artery.color}
-          isSelected={selectedVessel === artery.id}
-          onSelect={() => handleSelectVessel(artery.id)}
-          isVisible={isVisible}
-        />
-      ))}
+      {/* 3D Surface Glow Beacons anchored to exact mesh vertices (Rendered only after prediction) */}
+      {hasPrediction &&
+        ARTERY_DATA.map((artery) => (
+          <SurfaceGlowBeacon
+            key={`beacon-${artery.id}`}
+            beaconRef={beaconRefs[artery.id]}
+            surfacePos={artery.surfacePos}
+            color={artery.color}
+            isSelected={selectedVessel === artery.id}
+            onSelect={() => handleSelectVessel(artery.id)}
+            isVisible={isVisible}
+          />
+        ))}
     </group>
   );
 }
@@ -648,7 +653,15 @@ function CameraController({
 
 // ─── Main CommandDeck Viewport ─────────────────────────────────────────
 export function CommandDeck() {
-  const { selectedModel, setSelectedModel, prediction, focusedVessel, setFocusedVessel } = usePatientStore();
+  const {
+    selectedModel,
+    setSelectedModel,
+    prediction,
+    focusedVessel,
+    setFocusedVessel,
+    isLoading,
+    patient,
+  } = usePatientStore();
   const [isRotating, setIsRotating] = useState(false);
   const [targetRotationY, setTargetRotationY] = useState<number | null>(null);
   const [selectedVessel, setSelectedVessel] = useState<string | null>(null);
@@ -838,7 +851,7 @@ export function CommandDeck() {
 
           <div className="w-[1px] h-4 bg-slate-200 mx-0.5" />
 
-          {selectedModel === 'glb' && (
+          {selectedModel === 'glb' && prediction !== null && (
             <button
               type="button"
               id="btn-toggle-cards"
@@ -922,6 +935,7 @@ export function CommandDeck() {
                 heartGroupRef={heartGroupRef}
                 beaconRefs={beaconRefs}
                 isVisible={selectedModel === 'glb'}
+                hasPrediction={prediction !== null}
               />
               <DynamicScreenTracker
                 containerRef={containerRef}
@@ -949,10 +963,102 @@ export function CommandDeck() {
         </Suspense>
       </div>
 
+      {/* ── Standby State Indicator (Clean 3D Anatomy before prediction) ── */}
+      {!prediction && !isLoading && (
+        <div className="absolute top-16 left-4 z-20 pointer-events-none animate-in fade-in duration-300">
+          <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 px-3 py-1.5 rounded-xl shadow-xs flex items-center gap-2 text-[11px] text-slate-600">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+            <span className="font-semibold text-slate-800">3D Cardiovascular Anatomy</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500">Run analysis to map coronary stenosis</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Frosted Glassmorphism Cardiac Telemetry Loading Overlay ── */}
+      {isLoading && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center p-4 backdrop-blur-md bg-white/60 animate-in fade-in duration-200 select-none">
+          <div className="bg-white/92 backdrop-blur-2xl border border-teal-200/90 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-sm w-full text-center">
+            {/* Header Badge */}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-bold tracking-wider uppercase">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span>Cardiac Telemetry Active</span>
+            </div>
+
+            {/* Glowing Pulsing Beating Heart */}
+            <div className="relative w-20 h-20 flex items-center justify-center my-1">
+              <div
+                className="absolute inset-0 rounded-full border-2 border-rose-400/30 animate-ping"
+                style={{ animationDuration: '2s' }}
+              />
+              <div
+                className="absolute inset-2 rounded-full border border-teal-400/40 animate-pulse"
+                style={{ animationDuration: '1.5s' }}
+              />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 via-rose-600 to-red-600 flex items-center justify-center text-white shadow-lg shadow-rose-500/30">
+                <Heart className="w-7 h-7 fill-white stroke-[2.2] animate-pulse" />
+              </div>
+            </div>
+
+            {/* High-Tech ECG Telemetry Scope */}
+            <div className="w-full bg-slate-950 rounded-xl p-2.5 border border-slate-800 shadow-inner flex flex-col gap-1.5 font-mono">
+              <div className="flex items-center justify-between text-[9px] text-slate-400">
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LEAD II ECG
+                </span>
+                <span className="text-amber-400 font-bold">
+                  HR: {patient.PR ?? 74} BPM
+                </span>
+              </div>
+
+              {/* Animated SVG ECG Waveform */}
+              <div className="relative h-8 w-full overflow-hidden flex items-center">
+                <svg
+                  viewBox="0 0 300 40"
+                  className="w-full h-full stroke-emerald-400 fill-none"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M 0,20 L 35,20 L 42,16 L 48,20 L 54,8 L 60,34 L 66,16 L 72,20 L 85,20 L 92,23 L 100,20 L 150,20 L 157,16 L 163,20 L 169,8 L 175,34 L 181,16 L 187,20 L 200,20 L 207,23 L 215,20 L 265,20 L 272,16 L 278,20 L 284,8 L 290,34 L 296,16 L 300,20"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="drop-shadow-[0_0_4px_#34d399]"
+                  />
+                </svg>
+                {/* Glowing scanning sweep line */}
+                <div className="absolute inset-y-0 w-8 bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent animate-[shimmer_1.6s_infinite]" />
+              </div>
+
+              <div className="flex items-center justify-between text-[8px] text-slate-400">
+                <span>SPEED: 25mm/s</span>
+                <span>VOLT: 10mm/mV</span>
+                <span className="text-emerald-400">ST-SEG: MONITORED</span>
+              </div>
+            </div>
+
+            {/* Stepped Simulation Status */}
+            <div className="w-full flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-bold text-slate-800">Simulating Hemodynamics</span>
+                <span className="text-teal-700 font-bold font-mono">Ensemble Sync</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-teal-500 via-rose-500 to-[#0f766e] rounded-full animate-pulse w-full" />
+              </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Evaluating 3D coronary flow, shear stress, and stenosis probabilities
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Dynamic SVG Leader Lines & Arrow Markers Overlay ── */}
       <svg
         className={`absolute inset-0 w-full h-full pointer-events-none z-20 transition-opacity duration-200 ${
-          selectedModel === 'glb' && showCards ? 'block' : 'hidden'
+          selectedModel === 'glb' && showCards && prediction !== null ? 'block' : 'hidden'
         }`}
       >
         <defs>
@@ -1017,7 +1123,7 @@ export function CommandDeck() {
       </svg>
 
       {/* ── Apple-Inspired Artery Callout Cards (Docked HUD Overlay) ── */}
-      {selectedModel === 'glb' && showCards && (
+      {selectedModel === 'glb' && showCards && prediction !== null && (
         <div className="absolute inset-0 pointer-events-none z-20">
           {ARTERY_DATA.map((artery) => {
             const probNum = getProbNumber(artery.id);

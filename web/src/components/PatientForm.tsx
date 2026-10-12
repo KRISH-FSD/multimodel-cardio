@@ -7,7 +7,6 @@ import {
   Activity,
   Beaker,
   Scale,
-  Zap,
   ChevronRight,
   ChevronLeft,
   Flame,
@@ -65,6 +64,8 @@ export function PatientForm() {
     isLoading,
     reset,
     toggleFormCollapsed,
+    activePatient,
+    addNotification,
   } = usePatientStore();
 
   const [activeProfile, setActiveProfile] = useState<'high' | 'normal' | null>(null);
@@ -134,7 +135,15 @@ export function PatientForm() {
     }
 
     try {
+      const startTime = Date.now();
       const { data, error } = await apiClient.POST('/api/predict', { body: payload as any });
+
+      // Ensure smooth telemetry loading display for at least 850ms so user can experience the animation
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 850) {
+        await new Promise((r) => setTimeout(r, 850 - elapsed));
+      }
+
       if (error) {
         let msg = 'Validation Error';
         if (typeof error === 'string') msg = error;
@@ -147,6 +156,32 @@ export function PatientForm() {
         setError(msg);
       } else if (data) {
         setPrediction(data);
+
+        // Compute primary metrics for dynamic notification
+        const cadProb = data.predictions?.cad?.probability ?? 0;
+        const ladProb = data.predictions?.lad?.probability ?? 0;
+        const lcxProb = data.predictions?.lcx?.probability ?? 0;
+        const rcaProb = data.predictions?.rca?.probability ?? 0;
+
+        let topVessel = 'LAD (Anterior)';
+        if (rcaProb >= ladProb && rcaProb >= lcxProb) topVessel = 'RCA (Inferior)';
+        else if (lcxProb >= ladProb) topVessel = 'LCX (Lateral)';
+
+        const isHighRisk = cadProb >= 0.5;
+        const patientPrn = activePatient?.prn || 'Patient';
+
+        await addNotification({
+          title: isHighRisk
+            ? `High Risk CAD Alert: ${patientPrn}`
+            : `CAD Assessment Complete: ${patientPrn}`,
+          message: isHighRisk
+            ? `CAD probability evaluated at ${(cadProb * 100).toFixed(1)}%. Suspected ${topVessel} territory stenosis (${(Math.max(ladProb, lcxProb, rcaProb) * 100).toFixed(1)}%). Immediate angiography recommended.`
+            : `CAD probability evaluated at ${(cadProb * 100).toFixed(1)}% (Low-Moderate risk). Perfusion territory normal. Routine clinical monitoring recommended.`,
+          type: isHighRisk ? 'critical' : 'success',
+          patientId: activePatient?.id,
+          patientPrn,
+          predictionData: data,
+        });
       }
     } catch (err: any) {
       setError(err.message || 'Failed to connect to Analysis Engine');
@@ -178,10 +213,10 @@ export function PatientForm() {
   };
 
   return (
-    <div className="flex flex-col h-full justify-between select-none text-slate-800">
+    <div className="flex flex-col select-none text-slate-800 space-y-3">
 
       {/* ── Top Header with Reset & Collapse Buttons ── */}
-      <div className="shrink-0">
+      <div className="space-y-2">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center border border-teal-200/70 text-[#0f766e]">
@@ -298,7 +333,7 @@ export function PatientForm() {
       </div>
 
       {/* ── Active Step Inputs (Directly below title, without empty gap) ── */}
-      <div className="my-1">
+      <div>
 
         {/* ── STEP 1: Demographics ── */}
         {currentStep === 1 && (
@@ -680,7 +715,7 @@ export function PatientForm() {
       </div>
 
       {/* ── Bottom Section: Actions directly underneath input features ── */}
-      <div className="shrink-0 pt-2 space-y-2">
+      <div className="space-y-2 pt-1">
         {/* Navigation (Back / Next Step) directly under inputs */}
         <div className="flex items-center gap-2">
           {currentStep > 1 && (
