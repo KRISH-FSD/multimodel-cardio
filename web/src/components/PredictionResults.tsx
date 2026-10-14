@@ -3,14 +3,10 @@ import { usePatientStore } from '../store/store';
 import type { ArteryId } from '../store/store';
 import { ShapWaterfall } from './ShapWaterfall';
 import {
-  BarChart3,
+  Activity,
   AlertTriangle,
   CheckCircle2,
-  Activity,
-  Heart,
   ShieldAlert,
-  Stethoscope,
-  Eye,
 } from 'lucide-react';
 
 export function PredictionResults() {
@@ -22,26 +18,12 @@ export function PredictionResults() {
     setFocusedVessel,
   } = usePatientStore();
 
-  // Calculated values derived directly from model predictions
   const cadProb = prediction?.predictions?.cad?.probability ?? 0;
-  const cadLabel = prediction?.predictions?.cad?.label ?? (cadProb >= 0.5 ? 1 : 0);
-
   const ladProb = prediction?.predictions?.lad?.probability ?? 0;
   const lcxProb = prediction?.predictions?.lcx?.probability ?? 0;
   const rcaProb = prediction?.predictions?.rca?.probability ?? 0;
 
-  const isHighRisk = cadLabel === 1 || cadProb >= 0.5;
-
-  const getRiskTier = (prob: number) => {
-    if (prob >= 0.5) return { label: 'High Risk', badge: 'bg-rose-50 text-rose-700 border-rose-200' };
-    if (prob >= 0.35) return { label: 'Moderate-High', badge: 'bg-rose-50/80 text-rose-600 border-rose-200/80' };
-    if (prob >= 0.25) return { label: 'Moderate', badge: 'bg-blue-50 text-blue-700 border-blue-200' };
-    return { label: 'Low-Moderate', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-  };
-
-  const ladTier = getRiskTier(ladProb);
-  const lcxTier = getRiskTier(lcxProb);
-  const rcaTier = getRiskTier(rcaProb);
+  const isHighRisk = cadProb >= 0.5;
 
   const handleVesselClick = (vessel: ArteryId) => {
     if (focusedVessel === vessel) {
@@ -51,7 +33,6 @@ export function PredictionResults() {
     }
   };
 
-  // Determine highest risk vessel for clinical summary
   const highestVessel = React.useMemo(() => {
     const vessels = [
       { name: 'LAD (Anterior)', prob: ladProb },
@@ -63,307 +44,341 @@ export function PredictionResults() {
   }, [ladProb, rcaProb, lcxProb]);
 
   return (
-    <div className="flex flex-col h-full justify-start gap-2.5 select-none text-slate-800 relative">
-      {/* ── 1. Clean Header (No Collliding Badges or Duplicate Tabs) ── */}
-      <div className="flex items-center justify-between shrink-0">
+    <div className="flex flex-col h-full justify-between gap-2 select-none text-slate-800 relative overflow-hidden">
+      {/* ── 1. Compact Header ── */}
+      <div className="flex items-center justify-between shrink-0 h-7">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-teal-50 text-[#0f766e] flex items-center justify-center shrink-0 border border-teal-200/80">
-            <BarChart3 className="w-3.5 h-3.5 text-[#0f766e]" />
+          <div className="w-6 h-6 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-200/80">
+            <Activity className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h2 className="text-xs font-bold text-slate-900 leading-tight">Cardiovascular Risk Analysis</h2>
-            <p className="text-[10px] text-slate-500 leading-none mt-0.5">Multimodal AI Ensemble Output</p>
+            <h2 className="text-xs font-bold text-slate-900 leading-none">Risk Assessment</h2>
+            <p className="text-[9.5px] text-slate-400 leading-none mt-0.5">Multimodal Model Output</p>
           </div>
         </div>
 
         {/* Status Badge */}
         <span
-          className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border font-mono ${
+          className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${
             prediction
               ? 'bg-teal-50 text-teal-800 border-teal-200'
               : 'bg-slate-100 text-slate-500 border-slate-200'
           }`}
         >
-          {prediction ? 'AI Evaluated' : 'Standby'}
+          {prediction ? 'Evaluated' : 'Standby'}
         </span>
       </div>
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-2.5 py-1.5 rounded-xl text-[10px] flex items-center gap-2 shadow-2xs shrink-0">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-2 shrink-0">
           <ShieldAlert className="w-3.5 h-3.5 text-rose-500 shrink-0" />
           <span className="truncate">{typeof error === 'string' ? error : JSON.stringify(error)}</span>
         </div>
       )}
 
-      {/* ── Frosted Glassmorphism AI Ensemble Computing Overlay ── */}
+      {/* ── High-Tech Clinical Inference Loading Overlay ── */}
       {isLoading && (
-        <div className="absolute inset-0 z-40 backdrop-blur-md bg-white/85 rounded-2xl p-5 flex flex-col items-center justify-center gap-3.5 text-center animate-in fade-in duration-200 select-none shadow-sm">
-          <div className="relative w-14 h-14 flex items-center justify-center">
-            <div
-              className="absolute inset-0 rounded-2xl bg-teal-500/10 border-2 border-teal-500/40 animate-spin"
-              style={{ animationDuration: '3s' }}
-            />
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0f766e] to-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/25">
-              <Activity className="w-5 h-5 animate-pulse" />
+        <div className="absolute inset-0 z-40 backdrop-blur-md bg-white/95 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 text-center animate-in fade-in duration-200 select-none border border-teal-200/60 shadow-xl">
+          {/* Animated Spinner with pulse rings */}
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-2 border-teal-500/30 animate-ping" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-[#0f766e] flex items-center justify-center text-white shadow-md shadow-teal-700/20">
+              <Activity className="w-5 h-5 animate-spin" />
             </div>
           </div>
 
           <div className="space-y-1">
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 font-mono tracking-wider uppercase">
-              AI Ensemble Computing
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200/80 uppercase tracking-wider">
+              AI Inference Active
             </span>
-            <h3 className="text-xs font-bold text-slate-900 mt-1">Evaluating CAD Models</h3>
-            <p className="text-[10px] text-slate-500 max-w-[220px] leading-tight">
-              Processing gradient-boosted trees & calculating TreeSHAP values...
+            <h3 className="text-xs font-extrabold text-slate-900 mt-1">Synthesizing Multimodal Model</h3>
+            <p className="text-[10px] text-slate-500 max-w-[210px] leading-tight mx-auto">
+              Computing gradient-boosted ensemble & TreeSHAP explainability pipeline...
             </p>
           </div>
 
-          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-teal-500 via-blue-500 to-[#0f766e] rounded-full animate-pulse w-full" />
+          {/* Stepped progress indicators */}
+          <div className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex flex-col gap-1.5 text-left text-[9.5px]">
+            <div className="flex items-center justify-between text-slate-700 font-medium">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                16+ Clinical Biomarkers Ingested
+              </span>
+              <span className="text-emerald-600 font-bold">✓</span>
+            </div>
+            <div className="flex items-center justify-between text-slate-700 font-medium">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                Coronary Perfusion Models (LAD/LCX/RCA)
+              </span>
+              <span className="text-teal-600 font-mono animate-pulse">Running</span>
+            </div>
+            <div className="flex items-center justify-between text-slate-500 font-medium">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                Unified TreeSHAP Feature Attributions
+              </span>
+              <span className="text-slate-400 font-mono">Syncing</span>
+            </div>
           </div>
 
-          <div className="space-y-1 text-[9px] text-slate-400 font-mono">
-            <div>• Multi-Model XGBoost / CatBoost</div>
-            <div>• Coronary Branch Calibration</div>
-            <div>• SHAP Feature Attribution</div>
+          {/* Shimmering Progress Bar */}
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-teal-500 via-rose-500 to-[#0f766e] rounded-full animate-pulse w-full" />
           </div>
         </div>
       )}
 
-      {/* ── 2. Main Content: Empty State vs Analytical Report ── */}
-      {!prediction ? (
-        /* ══════════ EMPTY STATE: AWAITING CLINICAL INPUT ══════════ */
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center p-4 bg-slate-50/70 border border-dashed border-slate-200/90 rounded-2xl gap-3 animate-in fade-in-50 duration-200">
-          <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-[#0f766e] shadow-2xs">
-            <Stethoscope className="w-6 h-6 stroke-[2.2]" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-xs font-bold text-slate-900">Awaiting Clinical Evaluation</h3>
-            <p className="text-[10px] text-slate-500 leading-relaxed max-w-[240px]">
-              Enter patient clinical parameters on the left and click{' '}
-              <span className="font-bold text-[#0f766e]">Run Cardiovascular Analysis</span> to generate
-              multi-branch CAD risk predictions and SHAP explainability.
-            </p>
-          </div>
-
-          {/* Structured Output Pipeline Preview */}
-          <div className="w-full bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs flex flex-col gap-2 text-left mt-1">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-              Predicted Outputs:
+      {/* ── Report Cards (Zero scrollbar, vertically balanced, displays 0.0% when unanalyzed) ── */}
+      <div className="flex-1 flex flex-col justify-between min-h-0 gap-2">
+        {/* Card 1: Hero CAD Risk Score */}
+        <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 shadow-2xs space-y-1.5 shrink-0">
+          <div className="flex items-center justify-between">
+            <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider">
+              Overall CAD Risk
             </span>
-            <div className="space-y-1.5 text-[10px] text-slate-600">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-                <span>Overall CAD Risk Score (AI Ensemble)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-                <span>LAD, LCX & RCA Branch Stenosis</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-                <span>SHAP Feature Attribution Waterfall</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-                <span>Clinical Decision Support Metrics</span>
-              </div>
-            </div>
+            {prediction ? (
+              isHighRisk ? (
+                <span className="inline-flex items-center gap-1 text-[9.5px] font-bold px-2 py-0.2 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                  <AlertTriangle className="w-2.5 h-2.5 text-rose-500" />
+                  <span>High Risk (≥50%)</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[9.5px] font-bold px-2 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
+                  <span>Low Risk (&lt;35%)</span>
+                </span>
+              )
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                <span>Awaiting Analysis</span>
+              </span>
+            )}
           </div>
 
-          <div className="text-[9px] text-slate-400 font-medium">
-            Tip: Use "High Risk Sample" or "Normal Sample" to test instantly
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-black text-slate-900 tracking-tight">
+              {prediction ? `${(cadProb * 100).toFixed(1)}%` : '0.0%'}
+            </div>
+            <span
+              className={`text-[11px] font-semibold ${
+                prediction
+                  ? isHighRisk
+                    ? 'text-rose-600'
+                    : 'text-emerald-700'
+                  : 'text-slate-400'
+              }`}
+            >
+              {prediction
+                ? isHighRisk
+                  ? 'Significant Stenosis Likely'
+                  : 'Non-Obstructive Perfusion'
+                : 'Awaiting Model Execution'}
+            </span>
+          </div>
+
+          {/* Progress Meter */}
+          <div className="space-y-0.5">
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  prediction
+                    ? isHighRisk
+                      ? 'bg-rose-500'
+                      : cadProb >= 0.35
+                      ? 'bg-amber-500'
+                      : 'bg-emerald-500'
+                    : 'bg-slate-300'
+                }`}
+                style={{
+                  width: prediction
+                    ? `${Math.min(100, Math.max(5, cadProb * 100))}%`
+                    : '0%',
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-[8px] text-slate-400 font-mono">
+              <span>Normal (&lt;35%)</span>
+              <span>Elevated (35-49%)</span>
+              <span>Critical (≥50%)</span>
+            </div>
           </div>
         </div>
-      ) : (
-        /* ══════════ UNIFIED ANALYTICAL REPORT ══════════ */
-        <div className="flex flex-col gap-2.5 animate-in fade-in-50 duration-150">
-          {/* ── Card 1: Overall CAD Risk Score (Redesigned & Clean) ── */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 shadow-2xs flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700">Overall CAD Risk Score</span>
-              {isHighRisk ? (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
-                  <AlertTriangle className="w-3 h-3 text-rose-600" />
-                  <span>High Risk Detected</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  <span>Normal / Low Risk</span>
-                </div>
-              )}
-            </div>
 
-            <div className="flex items-baseline justify-between mt-0.5">
-              <div className="text-3xl font-extrabold tracking-tight text-slate-900 font-mono">
-                {(cadProb * 100).toFixed(1)}%
+        {/* Card 2: Coronary Branch Breakdown */}
+        <div className="space-y-1 shrink-0">
+          <div className="flex items-center justify-between text-[10px] px-0.5">
+            <span className="font-bold text-slate-700">Coronary Vessel Territories</span>
+            <span className="text-[9px] text-slate-400">Click to focus 3D</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1.5">
+            {/* LAD */}
+            <button
+              type="button"
+              onClick={() => handleVesselClick('lad')}
+              className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer ${
+                focusedVessel === 'lad'
+                  ? 'border-rose-500 bg-rose-50/50 ring-2 ring-rose-500/20'
+                  : 'border-slate-200/90 hover:border-slate-300 bg-white'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-rose-600">LAD</span>
+                <span className="text-[8.5px] text-slate-400">Anterior</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-500">
-                {isHighRisk ? 'Severe Ischemia Likely' : 'Low Ischemia Likelihood'}
-              </span>
-            </div>
-
-            {/* Continuous Gradient Progress Gauge */}
-            <div className="space-y-1">
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div className="text-sm font-extrabold text-slate-900 mt-0.5">
+                {prediction ? `${(ladProb * 100).toFixed(1)}%` : '0.0%'}
+              </div>
+              <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1 mb-0.5">
                 <div
-                  className="h-full transition-all duration-700 rounded-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500"
-                  style={{ width: `${Math.min(100, Math.max(4, cadProb * 100))}%` }}
+                  className="h-full bg-rose-500 rounded-full"
+                  style={{ width: prediction ? `${ladProb * 100}%` : '0%' }}
                 />
               </div>
-              <div className="flex justify-between text-[8px] font-mono text-slate-400 px-0.5">
-                <span>Low (&lt;35%)</span>
-                <span>Moderate (35-49%)</span>
-                <span>High (≥50%)</span>
+              <span
+                className={`text-[8px] font-semibold block ${
+                  prediction
+                    ? ladProb >= 0.5
+                      ? 'text-rose-600 font-bold'
+                      : 'text-slate-500'
+                    : 'text-slate-400'
+                }`}
+              >
+                {prediction
+                  ? ladProb >= 0.5
+                    ? 'High Risk'
+                    : ladProb >= 0.35
+                    ? 'Moderate'
+                    : 'Normal'
+                  : 'Standby'}
+              </span>
+            </button>
+
+            {/* LCX */}
+            <button
+              type="button"
+              onClick={() => handleVesselClick('lcx')}
+              className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer ${
+                focusedVessel === 'lcx'
+                  ? 'border-teal-500 bg-teal-50/50 ring-2 ring-teal-500/20'
+                  : 'border-slate-200/90 hover:border-slate-300 bg-white'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-teal-700">LCX</span>
+                <span className="text-[8.5px] text-slate-400">Lateral</span>
               </div>
-            </div>
-          </div>
-
-          {/* ── Card 2: 3D-Linked Coronary Vessel Breakdown ── */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-[10px] px-0.5">
-              <span className="font-semibold text-slate-700 flex items-center gap-1">
-                <Heart className="w-3 h-3 text-rose-500" /> Coronary Branch Breakdown
-              </span>
-              <span className="text-[9px] text-slate-400 font-mono">3D Synchronized</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-1.5">
-              {/* LAD Card */}
-              <button
-                type="button"
-                onClick={() => handleVesselClick('lad')}
-                className={`bg-white rounded-xl p-2 shadow-2xs flex flex-col gap-1 text-left transition-all cursor-pointer border ${
-                  focusedVessel === 'lad'
-                    ? 'ring-2 ring-rose-500 border-rose-400 bg-rose-50/30 shadow-xs'
-                    : 'border-slate-200/80 hover:border-rose-300 hover:bg-slate-50/50'
+              <div className="text-sm font-extrabold text-slate-900 mt-0.5">
+                {prediction ? `${(lcxProb * 100).toFixed(1)}%` : '0.0%'}
+              </div>
+              <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1 mb-0.5">
+                <div
+                  className="h-full bg-teal-600 rounded-full"
+                  style={{ width: prediction ? `${lcxProb * 100}%` : '0%' }}
+                />
+              </div>
+              <span
+                className={`text-[8px] font-semibold block ${
+                  prediction
+                    ? lcxProb >= 0.5
+                      ? 'text-rose-600 font-bold'
+                      : 'text-slate-500'
+                    : 'text-slate-400'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-rose-600">LAD</span>
-                  {focusedVessel === 'lad' && (
-                    <Eye className="w-2.5 h-2.5 text-rose-600 animate-pulse" />
-                  )}
-                </div>
+                {prediction
+                  ? lcxProb >= 0.5
+                    ? 'High Risk'
+                    : lcxProb >= 0.35
+                    ? 'Moderate'
+                    : 'Normal'
+                  : 'Standby'}
+              </span>
+            </button>
 
-                <div className="font-mono text-sm font-extrabold text-slate-900">
-                  {(ladProb * 100).toFixed(1)}%
-                </div>
-
-                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-rose-500 rounded-full transition-all duration-500"
-                    style={{ width: `${ladProb * 100}%` }}
-                  />
-                </div>
-
-                <div className={`text-[8px] font-semibold text-center py-0.2 rounded border ${ladTier.badge}`}>
-                  {ladTier.label}
-                </div>
-              </button>
-
-              {/* LCX Card */}
-              <button
-                type="button"
-                onClick={() => handleVesselClick('lcx')}
-                className={`bg-white rounded-xl p-2 shadow-2xs flex flex-col gap-1 text-left transition-all cursor-pointer border ${
-                  focusedVessel === 'lcx'
-                    ? 'ring-2 ring-teal-500 border-teal-400 bg-teal-50/30 shadow-xs'
-                    : 'border-slate-200/80 hover:border-teal-300 hover:bg-slate-50/50'
+            {/* RCA */}
+            <button
+              type="button"
+              onClick={() => handleVesselClick('rca')}
+              className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer ${
+                focusedVessel === 'rca'
+                  ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-500/20'
+                  : 'border-slate-200/90 hover:border-slate-300 bg-white'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-blue-600">RCA</span>
+                <span className="text-[8.5px] text-slate-400">Inferior</span>
+              </div>
+              <div className="text-sm font-extrabold text-slate-900 mt-0.5">
+                {prediction ? `${(rcaProb * 100).toFixed(1)}%` : '0.0%'}
+              </div>
+              <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1 mb-0.5">
+                <div
+                  className="h-full bg-blue-600 rounded-full"
+                  style={{ width: prediction ? `${rcaProb * 100}%` : '0%' }}
+                />
+              </div>
+              <span
+                className={`text-[8px] font-semibold block ${
+                  prediction
+                    ? rcaProb >= 0.5
+                      ? 'text-rose-600 font-bold'
+                      : 'text-slate-500'
+                    : 'text-slate-400'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#0f766e]">LCX</span>
-                  {focusedVessel === 'lcx' && (
-                    <Eye className="w-2.5 h-2.5 text-[#0f766e] animate-pulse" />
-                  )}
-                </div>
-
-                <div className="font-mono text-sm font-extrabold text-slate-900">
-                  {(lcxProb * 100).toFixed(1)}%
-                </div>
-
-                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#0f766e] rounded-full transition-all duration-500"
-                    style={{ width: `${lcxProb * 100}%` }}
-                  />
-                </div>
-
-                <div className={`text-[8px] font-semibold text-center py-0.2 rounded border ${lcxTier.badge}`}>
-                  {lcxTier.label}
-                </div>
-              </button>
-
-              {/* RCA Card */}
-              <button
-                type="button"
-                onClick={() => handleVesselClick('rca')}
-                className={`bg-white rounded-xl p-2 shadow-2xs flex flex-col gap-1 text-left transition-all cursor-pointer border ${
-                  focusedVessel === 'rca'
-                    ? 'ring-2 ring-blue-500 border-blue-400 bg-blue-50/30 shadow-xs'
-                    : 'border-slate-200/80 hover:border-blue-300 hover:bg-slate-50/50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-blue-600">RCA</span>
-                  {focusedVessel === 'rca' && (
-                    <Eye className="w-2.5 h-2.5 text-blue-600 animate-pulse" />
-                  )}
-                </div>
-
-                <div className="font-mono text-sm font-extrabold text-slate-900">
-                  {(rcaProb * 100).toFixed(1)}%
-                </div>
-
-                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                    style={{ width: `${rcaProb * 100}%` }}
-                  />
-                </div>
-
-                <div className={`text-[8px] font-semibold text-center py-0.2 rounded border ${rcaTier.badge}`}>
-                  {rcaTier.label}
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* ── Card 3: Clinical Decision Indicators Bar ── */}
-          <div className="bg-slate-50/90 rounded-xl border border-slate-200/80 p-2 grid grid-cols-3 gap-2 text-[10px]">
-            <div className="flex flex-col">
-              <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wider">
-                Primary Territory
+                {prediction
+                  ? rcaProb >= 0.5
+                    ? 'High Risk'
+                    : rcaProb >= 0.35
+                    ? 'Moderate'
+                    : 'Normal'
+                  : 'Standby'}
               </span>
-              <span className="font-bold text-slate-800 truncate">{highestVessel.name}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wider">
-                Stenosis Suspect
-              </span>
-              <span className={`font-bold truncate ${isHighRisk ? 'text-rose-600' : 'text-emerald-700'}`}>
-                {isHighRisk ? 'Significant' : 'Non-Obstructive'}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wider">
-                ACC/AHA Action
-              </span>
-              <span className="font-bold text-teal-800 truncate">
-                {isHighRisk ? 'CCTA / Angio' : 'Routine Care'}
-              </span>
-            </div>
-          </div>
-
-          {/* ── Card 4: Explainability (TreeSHAP Waterfall) ── */}
-          <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 shadow-2xs">
-            <ShapWaterfall />
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Card 3: Clinical Recommendation Box */}
+        <div className="bg-slate-50/90 rounded-xl border border-slate-200/80 p-2 space-y-0.5 shrink-0">
+          <div className="flex items-center justify-between text-[9.5px]">
+            <span className="font-bold text-slate-400 uppercase tracking-wider">
+              Primary Territory:
+            </span>
+            <span className="font-bold text-slate-800">
+              {prediction ? highestVessel.name : 'None (Pending Analysis)'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-[9.5px]">
+            <span className="font-bold text-slate-400 uppercase tracking-wider">
+              Referral:
+            </span>
+            <span
+              className={`font-bold ${
+                prediction
+                  ? isHighRisk
+                    ? 'text-rose-600'
+                    : 'text-teal-800'
+                  : 'text-slate-500'
+              }`}
+            >
+              {prediction
+                ? isHighRisk
+                  ? 'Diagnostic CCTA / Angiography'
+                  : 'Routine Clinical Follow-Up'
+                : 'Pending Cardiovascular Analysis'}
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Bipolar Divergent TreeSHAP Graph (Negative & Positive together) */}
+        <div className="bg-white rounded-xl border border-slate-200/90 p-2 shadow-2xs shrink-0">
+          <ShapWaterfall />
+        </div>
+      </div>
     </div>
   );
 }

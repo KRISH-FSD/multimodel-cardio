@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import {
   X,
   UserPlus,
-  Flame,
-  CheckCircle2,
-  FileText,
   Phone,
   AlertCircle,
 } from 'lucide-react';
@@ -15,37 +12,6 @@ interface NewPatientModalProps {
   onClose: () => void;
   onPatientCreated?: () => void;
 }
-
-// Sample starting profiles to quickly prefill
-const HIGH_RISK_PRESET = {
-  Age: 62, Weight: 88, Length: 174, Sex: 1, BMI: 29.07,
-  DM: 0, HTN: 1, 'Current Smoker': 1, 'EX-Smoker': 0, FH: 1,
-  Obesity: 1, CRF: 0, CVA: 0, 'Airway disease': 0, 'Thyroid Disease': 0,
-  CHF: 0, DLP: 1, BP: 135, PR: 88, Edema: 0,
-  'Weak Peripheral Pulse': 0, 'Lung rales': 0, 'Systolic Murmur': 0,
-  'Diastolic Murmur': 0, 'Typical Chest Pain': 1, Dyspnea: 0,
-  'Function Class': 0, Atypical: 0, Nonanginal: 0, 'Exertional CP': 0,
-  'LowTH Ang': 0, 'Q Wave': 0, 'St Elevation': 0, 'St Depression': 0,
-  'T inversion': 0, LVH: 0, 'Poor R Progression': 0, BBB: 0,
-  FBS: 98, CR: 0.9, TG: 185, LDL: 162, HDL: 36.0, BUN: 14,
-  ESR: 10, HB: 15.0, K: 4.5, Na: 140, WBC: 7200, Lymph: 34,
-  Neut: 60, PLT: 250, 'EF-TTE': 45, 'Region RWMA': 0, VHD: 'N',
-};
-
-const NORMAL_RISK_PRESET = {
-  Age: 38, Weight: 68, Length: 172, Sex: 0, BMI: 23.0,
-  DM: 0, HTN: 0, 'Current Smoker': 0, 'EX-Smoker': 0, FH: 0,
-  Obesity: 0, CRF: 0, CVA: 0, 'Airway disease': 0, 'Thyroid Disease': 0,
-  CHF: 0, DLP: 0, BP: 118, PR: 68, Edema: 0,
-  'Weak Peripheral Pulse': 0, 'Lung rales': 0, 'Systolic Murmur': 0,
-  'Diastolic Murmur': 0, 'Typical Chest Pain': 0, Dyspnea: 0,
-  'Function Class': 0, Atypical: 0, Nonanginal: 0, 'Exertional CP': 0,
-  'LowTH Ang': 0, 'Q Wave': 0, 'St Elevation': 0, 'St Depression': 0,
-  'T inversion': 0, LVH: 0, 'Poor R Progression': 0, BBB: 0,
-  FBS: 82, CR: 0.75, TG: 110, LDL: 85, HDL: 58.0, BUN: 11,
-  ESR: 4, HB: 13.8, K: 4.1, Na: 139, WBC: 5800, Lymph: 32,
-  Neut: 58, PLT: 210, 'EF-TTE': 65, 'Region RWMA': 0, VHD: 'N',
-};
 
 export function NewPatientModal({ isOpen, onClose, onPatientCreated }: NewPatientModalProps) {
   const { patientsList, createPatient } = usePatientStore();
@@ -67,8 +33,6 @@ export function NewPatientModal({ isOpen, onClose, onPatientCreated }: NewPatien
   const [age, setAge] = useState<number>(55);
   const [sex, setSex] = useState<number>(1);
   const [contact, setContact] = useState('');
-  const [notes, setNotes] = useState('');
-  const [preset, setPreset] = useState<'blank' | 'high' | 'normal'>('blank');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,21 +61,13 @@ export function NewPatientModal({ isOpen, onClose, onPatientCreated }: NewPatien
     setError(null);
 
     try {
-      let clinicalData: any = { Age: age, Sex: sex };
-      if (preset === 'high') {
-        clinicalData = { ...HIGH_RISK_PRESET, Age: age, Sex: sex };
-      } else if (preset === 'normal') {
-        clinicalData = { ...NORMAL_RISK_PRESET, Age: age, Sex: sex };
-      }
-
       await createPatient({
         prn: prn.trim().toUpperCase(),
         full_name: fullName.trim(),
         age,
         sex,
         contact: contact.trim(),
-        notes: notes.trim(),
-        clinical_data: clinicalData,
+        clinical_data: { Age: age, Sex: sex },
       });
 
       if (onPatientCreated) {
@@ -247,76 +203,6 @@ export function NewPatientModal({ isOpen, onClose, onPatientCreated }: NewPatien
                 />
               </div>
             </div>
-          </div>
-
-          {/* Preset baseline starter */}
-          <div>
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-              Initial Clinical Baseline
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setPreset('blank')}
-                className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
-                  preset === 'blank'
-                    ? 'border-teal-500 bg-teal-50/70 text-teal-900 ring-2 ring-teal-500/20'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-bold text-xs">
-                  <FileText className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Blank</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">Manual parameter input</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPreset('high')}
-                className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
-                  preset === 'high'
-                    ? 'border-rose-500 bg-rose-50/70 text-rose-900 ring-2 ring-rose-500/20'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-bold text-xs text-rose-700">
-                  <Flame className="w-3.5 h-3.5 text-rose-600" />
-                  <span>High Risk</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">Pre-fill HTN & Angina</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPreset('normal')}
-                className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
-                  preset === 'normal'
-                    ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 ring-2 ring-emerald-500/20'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 font-bold text-xs text-emerald-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Control</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">Normal baseline vitals</p>
-              </button>
-            </div>
-          </div>
-
-          {/* Clinical Notes / Chief Complaint */}
-          <div>
-            <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-              Chief Complaint & Clinical Notes
-            </label>
-            <textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Patient presents with acute substernal chest pressure radiating to left arm..."
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-teal-500 resize-none"
-            />
           </div>
 
           {/* Action Buttons */}

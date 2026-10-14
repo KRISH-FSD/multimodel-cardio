@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Heart,
   Folder,
-  Compass,
-  Settings,
   Bell,
   User,
   UserPlus,
   ChevronDown,
   ChevronRight,
   Activity,
+  BarChart3,
+  ShieldAlert,
 } from 'lucide-react';
 import { PatientForm } from './components/PatientForm';
 import { PredictionResults } from './components/PredictionResults';
@@ -19,7 +19,6 @@ import { AuthModal, DoctorProfileMenu } from './components/AuthModal';
 import { NewPatientModal } from './components/NewPatientModal';
 import { PatientRecordsView } from './components/PatientRecordsView';
 import { ModelInsightsView } from './components/ModelInsightsView';
-import { SettingsView } from './components/SettingsView';
 import { usePatientStore } from './store/store';
 
 function App() {
@@ -37,9 +36,10 @@ function App() {
     loadNotifications,
   } = usePatientStore();
 
-  const [activeTab, setActiveTab] = useState<'analysis' | 'records' | 'insights' | 'settings'>('analysis');
+  const [activeTab, setActiveTab] = useState<'analysis' | 'records' | 'insights'>('analysis');
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const [isPatientDropdownOpen, setIsPatientDropdownOpen] = useState(false);
 
@@ -103,18 +103,18 @@ function App() {
           </div>
         </div>
 
-        {/* Center Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200/60">
+        {/* Center Navigation Tabs (Cleaned: Analysis, Patient Records, Model Insights) */}
+        <nav className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200/60">
           <button
             type="button"
             onClick={() => setActiveTab('analysis')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'analysis'
-                ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-xs'
+                ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
             }`}
           >
-            <Activity className="w-3.5 h-3.5" />
+            <Activity className="w-3.5 h-3.5 text-teal-600" />
             <span>Analysis</span>
           </button>
 
@@ -123,7 +123,7 @@ function App() {
             onClick={() => setActiveTab('records')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'records'
-                ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-xs'
+                ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
             }`}
           >
@@ -139,33 +139,20 @@ function App() {
           <button
             type="button"
             onClick={() => setActiveTab('insights')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'insights'
-                ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-xs'
+                ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
             }`}
           >
-            <Compass className="w-3.5 h-3.5 text-slate-400" />
+            <BarChart3 className="w-3.5 h-3.5 text-teal-600" />
             <span>Model Insights</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-              activeTab === 'settings'
-                ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-            }`}
-          >
-            <Settings className="w-3.5 h-3.5 text-slate-400" />
-            <span>Settings</span>
           </button>
         </nav>
 
         {/* Right Status, Notifications & Profile Controls */}
         <div className="flex items-center gap-3">
-          {/* Model Status Badge (Dynamic Loading Indicator) */}
+          {/* Model Status Badge */}
           {isLoading ? (
             <div className="hidden sm:flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
               <span className="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
@@ -178,21 +165,21 @@ function App() {
             </div>
           )}
 
-          {/* Dynamic Notifications Bell */}
+          {/* Clean Notifications Bell */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsNotifOpen(!isNotifOpen)}
               className={`relative p-2 rounded-xl transition-all cursor-pointer border ${
                 unreadNotificationCount > 0
-                  ? 'border-teal-300 text-teal-800 bg-teal-50/70 hover:bg-teal-100'
+                  ? 'border-slate-300 text-slate-800 bg-slate-50 hover:bg-slate-100'
                   : 'border-slate-200/70 text-slate-500 hover:text-slate-800 hover:bg-slate-100 bg-white'
               }`}
-              title="Notifications & Alerts"
+              title="Notifications"
             >
               <Bell className="w-4 h-4" />
               {unreadNotificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-bounce">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {unreadNotificationCount}
                 </span>
               )}
@@ -206,10 +193,32 @@ function App() {
             />
           </div>
 
-          {/* Doctor Profile Dropdown & Switcher */}
-          <DoctorProfileMenu onOpenAuthModal={() => setIsAuthModalOpen(true)} />
+          {/* Doctor Profile Menu */}
+          <DoctorProfileMenu
+            onOpenAuthModal={() => {
+              setAuthModalMode('signin');
+              setIsAuthModalOpen(true);
+            }}
+            onOpenRegisterModal={() => {
+              setAuthModalMode('signup');
+              setIsAuthModalOpen(true);
+            }}
+          />
         </div>
       </header>
+
+      {/* ── Clinical Safety Disclaimer Banner (Mandatory Requirement 5) ── */}
+      <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl px-4 py-1.5 flex items-center justify-between shadow-2xs shrink-0 select-none">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+          <p className="text-[11px] text-amber-900 font-medium leading-none">
+            <span className="font-bold">Clinical Safety Notice:</span> Decision-support and educational prototype only. Predictions are statistical estimates and not a substitute for formal diagnostic coronary angiography (CCTA) or clinical diagnosis.
+          </p>
+        </div>
+        <span className="hidden sm:inline-flex text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100/90 text-amber-800 border border-amber-300/60 uppercase tracking-wider shrink-0">
+          Educational Demonstration
+        </span>
+      </div>
 
       {/* ── 2. Tab Views Switcher ── */}
       {activeTab === 'records' && (
@@ -219,9 +228,9 @@ function App() {
         />
       )}
 
-      {activeTab === 'insights' && <ModelInsightsView />}
-
-      {activeTab === 'settings' && <SettingsView />}
+      {activeTab === 'insights' && (
+        <ModelInsightsView />
+      )}
 
       {activeTab === 'analysis' && (
         <div className="flex-1 flex gap-3 min-h-0 overflow-y-auto lg:overflow-hidden">
@@ -338,11 +347,25 @@ function App() {
                   <span>{patientSex}</span>
                   <span className="text-slate-300">|</span>
                   <span>{patientAge} Years</span>
-                  {activePatient?.status === 'critical' && (
+                  {activePatient?.status === 'critical' ? (
                     <>
                       <span className="text-slate-300">|</span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
                         Critical Case
+                      </span>
+                    </>
+                  ) : activePatient?.status === 'analyzed' ? (
+                    <>
+                      <span className="text-slate-300">|</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Evaluated
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-slate-300">|</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                        Pending Analysis
                       </span>
                     </>
                   )}
@@ -366,15 +389,19 @@ function App() {
             </main>
           </div>
 
-          {/* Right Column: Analysis Results & SHAP */}
-          <aside className="w-full lg:w-[325px] xl:w-[350px] bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-xs flex flex-col min-h-0 lg:overflow-hidden overflow-y-auto shrink-0">
+          {/* Right Column: Analysis Results & SHAP (No scrollbar, perfectly fitted) */}
+          <aside className="w-full lg:w-[325px] xl:w-[350px] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-xs flex flex-col min-h-0 overflow-hidden shrink-0">
             <PredictionResults />
           </aside>
         </div>
       )}
 
       {/* ── 3. Modals & Floating Overlays ── */}
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        defaultMode={authModalMode}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
       <NewPatientModal
         isOpen={isNewPatientModalOpen}
         onClose={() => setIsNewPatientModalOpen(false)}

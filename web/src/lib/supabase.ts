@@ -116,15 +116,8 @@ export const DEFAULT_PATIENTS: PatientRecord[] = [
       ESR: 9, HB: 15.2, K: 4.6, Na: 141, WBC: 6800, Lymph: 35,
       Neut: 58, PLT: 245, 'EF-TTE': 48, 'Region RWMA': 0, VHD: 'N',
     },
-    latest_prediction: {
-      predictions: {
-        cad: { probability: 0.842, label: 1 },
-        lad: { probability: 0.784, label: 1 },
-        lcx: { probability: 0.381, label: 0 },
-        rca: { probability: 0.463, label: 0 },
-      },
-    },
-    status: 'critical',
+    latest_prediction: null,
+    status: 'pending',
     created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
     updated_at: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
@@ -151,15 +144,8 @@ export const DEFAULT_PATIENTS: PatientRecord[] = [
       ESR: 6, HB: 14.8, K: 4.3, Na: 139, WBC: 6200, Lymph: 32,
       Neut: 59, PLT: 220, 'EF-TTE': 62, 'Region RWMA': 0, VHD: 'N',
     },
-    latest_prediction: {
-      predictions: {
-        cad: { probability: 0.162, label: 0 },
-        lad: { probability: 0.125, label: 0 },
-        lcx: { probability: 0.098, label: 0 },
-        rca: { probability: 0.141, label: 0 },
-      },
-    },
-    status: 'stable',
+    latest_prediction: null,
+    status: 'pending',
     created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
     updated_at: new Date(Date.now() - 3600000 * 5).toISOString(),
   },
@@ -170,24 +156,11 @@ export const DEFAULT_NOTIFICATIONS: NotificationRecord[] = [
   {
     id: 'notif-1',
     doctor_id: '00000000-0000-0000-0000-000000000001',
-    patient_id: '10420000-0000-0000-0000-000000001042',
-    patient_prn: 'PRN-1042',
-    title: 'High Risk CAD Alert',
-    message: 'Patient PRN-1042 evaluated at 84.2% CAD probability. LAD territory flagged with 78.4% stenosis risk.',
-    type: 'critical',
+    title: 'System Ready',
+    message: 'CardioVision AI model initialized. Enter patient clinical data and click Run Cardiovascular Analysis.',
+    type: 'info',
     read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
-  },
-  {
-    id: 'notif-2',
-    doctor_id: '00000000-0000-0000-0000-000000000001',
-    patient_id: '10430000-0000-0000-0000-000000001043',
-    patient_prn: 'PRN-1043',
-    title: 'Screening Completed',
-    message: 'Patient PRN-1043 evaluated at 16.2% CAD probability. Normal perfusion territory.',
-    type: 'success',
-    read: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 55).toISOString(),
+    created_at: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
   },
 ];
 
@@ -214,9 +187,14 @@ export const dataService = {
       }
     }
 
-    // Local fallback
+    // Local fallback with migration guard to clear old pre-populated test cache
     const key = `cardiovision_patients_${doctorId}`;
-    const stored = localStorage.getItem(key);
+    const vKey = 'cardiovision_patients_init_v5';
+    if (typeof window !== 'undefined' && !localStorage.getItem(vKey)) {
+      localStorage.removeItem(key);
+      localStorage.setItem(vKey, 'true');
+    }
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
     if (stored) {
       try {
         return JSON.parse(stored);
@@ -226,7 +204,9 @@ export const dataService = {
     }
 
     // Default seed
-    localStorage.setItem(key, JSON.stringify(DEFAULT_PATIENTS));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(DEFAULT_PATIENTS));
+    }
     return DEFAULT_PATIENTS;
   },
 
@@ -313,7 +293,12 @@ export const dataService = {
     }
 
     const key = `cardiovision_notifs_${doctorId}`;
-    const stored = localStorage.getItem(key);
+    const vKey = 'cardiovision_notifs_init_v5';
+    if (typeof window !== 'undefined' && !localStorage.getItem(vKey)) {
+      localStorage.removeItem(key);
+      localStorage.setItem(vKey, 'true');
+    }
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
     if (stored) {
       try {
         return JSON.parse(stored);
@@ -322,7 +307,9 @@ export const dataService = {
       }
     }
 
-    localStorage.setItem(key, JSON.stringify(DEFAULT_NOTIFICATIONS));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(DEFAULT_NOTIFICATIONS));
+    }
     return DEFAULT_NOTIFICATIONS;
   },
 

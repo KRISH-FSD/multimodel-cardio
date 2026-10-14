@@ -74,6 +74,14 @@ export function PatientForm() {
 
   const totalSteps = STEPS.length;
   const allStepsCompleted = completedSteps.size >= totalSteps;
+  const canRunAnalysis = allStepsCompleted || Boolean(patient.Age && patient.Sex !== undefined);
+
+  // Auto-mark steps complete if patient data is already populated
+  React.useEffect(() => {
+    if (patient.Age && (patient.BP || patient.Weight)) {
+      setCompletedSteps(new Set([1, 2, 3, 4]));
+    }
+  }, [patient.Age, patient.BP, patient.Weight]);
 
   // ── Auto-calculate BMI when Weight and Length are present ───────────────────
   const autoBmi = React.useMemo(() => {
@@ -138,10 +146,10 @@ export function PatientForm() {
       const startTime = Date.now();
       const { data, error } = await apiClient.POST('/api/predict', { body: payload as any });
 
-      // Ensure smooth telemetry loading display for at least 850ms so user can experience the animation
+      // Guarantee smooth telemetry and scanning animation display for at least 2000ms
       const elapsed = Date.now() - startTime;
-      if (elapsed < 850) {
-        await new Promise((r) => setTimeout(r, 850 - elapsed));
+      if (elapsed < 2000) {
+        await new Promise((r) => setTimeout(r, 2000 - elapsed));
       }
 
       if (error) {
@@ -169,14 +177,16 @@ export function PatientForm() {
 
         const isHighRisk = cadProb >= 0.5;
         const patientPrn = activePatient?.prn || 'Patient';
+        const topVesselName = topVessel.split(' ')[0];
+        const topVesselPct = (Math.max(ladProb, lcxProb, rcaProb) * 100).toFixed(1);
 
         await addNotification({
           title: isHighRisk
-            ? `High Risk CAD Alert: ${patientPrn}`
-            : `CAD Assessment Complete: ${patientPrn}`,
+            ? `High CAD Risk (${(cadProb * 100).toFixed(1)}%)`
+            : `Low Risk Assessment (${(cadProb * 100).toFixed(1)}%)`,
           message: isHighRisk
-            ? `CAD probability evaluated at ${(cadProb * 100).toFixed(1)}%. Suspected ${topVessel} territory stenosis (${(Math.max(ladProb, lcxProb, rcaProb) * 100).toFixed(1)}%). Immediate angiography recommended.`
-            : `CAD probability evaluated at ${(cadProb * 100).toFixed(1)}% (Low-Moderate risk). Perfusion territory normal. Routine clinical monitoring recommended.`,
+            ? `${topVesselName} Stenosis (${topVesselPct}%) · CCTA / Angio Recommended`
+            : `Perfusion Normal · Routine Clinical Follow-up`,
           type: isHighRisk ? 'critical' : 'success',
           patientId: activePatient?.id,
           patientPrn,
@@ -755,17 +765,17 @@ export function PatientForm() {
 
         {/* Run Analysis CTA */}
         <div>
-          {!allStepsCompleted && (
+          {!canRunAnalysis && (
             <p className="text-center text-[10px] text-slate-400 mb-1 leading-none">
-              Complete all {totalSteps} steps to run model
+              Complete parameters to run model
             </p>
           )}
           <button
             type="button"
             onClick={handlePredict}
-            disabled={isLoading || !allStepsCompleted}
+            disabled={isLoading || !canRunAnalysis}
             className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-              allStepsCompleted
+              canRunAnalysis
                 ? 'bg-gradient-to-r from-[#0f766e] via-[#0d9488] to-[#0891b2] hover:from-[#115e59] hover:to-[#0e7490] text-white shadow-xs cursor-pointer active:scale-[0.99]'
                 : 'bg-slate-100 text-slate-400 border border-slate-200/90 cursor-not-allowed'
             }`}
@@ -779,7 +789,7 @@ export function PatientForm() {
               <>
                 <Activity className="w-3.5 h-3.5" />
                 <span>Run Cardiovascular Analysis</span>
-                {allStepsCompleted && <ChevronRight className="w-3.5 h-3.5 opacity-80" />}
+                {canRunAnalysis && <ChevronRight className="w-3.5 h-3.5 opacity-80" />}
               </>
             )}
           </button>

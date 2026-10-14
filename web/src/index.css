@@ -93,3 +93,24 @@
     gap: 0.375rem;
   }
 }
+
+@keyframes scanline {
+  0% {
+    top: 0%;
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 98%;
+    opacity: 0.2;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 2.4s ease-in-out infinite alternate;
+}
