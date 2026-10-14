@@ -1,39 +1,106 @@
 import { useMemo } from 'react';
 import { usePatientStore } from '../store/store';
+import type { ArteryId } from '../store/store';
 
-function getPatientFeatureValue(feature: string, patient: Record<string, any>): string | null {
-  if (feature === 'Typical Chest Pain') {
-    return patient['Typical Chest Pain'] === 1 ? 'Yes' : patient['Typical Chest Pain'] === 0 ? 'No' : null;
+function formatClinicalFeatureValue(
+  feature: string,
+  patient: Record<string, any>,
+  itemVal?: number
+): string | null {
+  // Try raw patient lookup first, then fallback to itemVal from API
+  let rawVal = patient[feature];
+  if (rawVal === undefined) {
+    // Check aliases
+    const aliasMap: Record<string, string> = {
+      'Typical Chest Pain': 'Typical_Chest_Pain',
+      'St Elevation': 'St_Elevation',
+      'St Depression': 'St_Depression',
+      'T inversion': 'Tinversion',
+      'Tinversion': 'T_inversion',
+      'Poor R Progression': 'Poor_R_Progression',
+      'Current Smoker': 'Current_Smoker',
+      'EX-Smoker': 'EX_Smoker',
+      'Airway disease': 'Airway_disease',
+      'Thyroid Disease': 'Thyroid_Disease',
+      'Q Wave': 'Q_Wave',
+      'EF-TTE': 'EF_TTE',
+      'Region RWMA': 'Region_RWMA',
+    };
+    const mapped = aliasMap[feature];
+    if (mapped) rawVal = patient[mapped];
   }
-  if (feature === 'Age') return patient.Age ? `${patient.Age}y` : null;
-  if (feature === 'HTN') return patient.HTN === 1 ? 'Yes' : patient.HTN === 0 ? 'No' : null;
-  if (feature === 'DM') return patient.DM === 1 ? 'Yes' : patient.DM === 0 ? 'No' : null;
-  if (feature === 'EF-TTE') return patient['EF-TTE'] ? `${patient['EF-TTE']}%` : null;
-  if (feature === 'TG') return patient.TG ? `${patient.TG} mg/dL` : null;
-  if (feature === 'LDL') return patient.LDL ? `${patient.LDL} mg/dL` : null;
-  if (feature === 'HDL' || feature === 'HDL Cholesterol') return patient.HDL ? `${patient.HDL} mg/dL` : null;
-  if (feature === 'FBS' || feature === 'Normal Glucose') return patient.FBS ? `${patient.FBS} mg/dL` : null;
-  if (feature === 'BMI') return patient.BMI ? `${patient.BMI}` : null;
-  if (feature === 'BP') return patient.BP ? `${patient.BP} mmHg` : null;
-  if (feature === 'PR') return patient.PR ? `${patient.PR} bpm` : null;
-  if (feature === 'HB') return patient.HB ? `${patient.HB} g/dL` : null;
-  if (feature === 'CR') return patient.CR ? `${patient.CR} mg/dL` : null;
-  if (feature === 'BUN') return patient.BUN ? `${patient.BUN} mg/dL` : null;
-  if (feature === 'ESR') return patient.ESR ? `${patient.ESR} mm/hr` : null;
-  if (feature === 'K') return patient.K ? `${patient.K} mEq/L` : null;
-  if (feature === 'Na') return patient.Na ? `${patient.Na} mEq/L` : null;
-  if (feature === 'WBC') return patient.WBC ? `${patient.WBC} /µL` : null;
-  if (feature === 'Current Smoker') return patient['Current Smoker'] === 1 ? 'Yes' : patient['Current Smoker'] === 0 ? 'No' : null;
-  if (feature === 'St Elevation') return patient['St Elevation'] === 1 ? 'Yes' : patient['St Elevation'] === 0 ? 'No' : null;
-  if (feature === 'St Depression') return patient['St Depression'] === 1 ? 'Yes' : patient['St Depression'] === 0 ? 'No' : null;
-  if (feature === 'T inversion' || feature === 'Tinversion') return patient['T inversion'] === 1 || patient.Tinversion === 1 ? 'Yes' : 'No';
-  return null;
+
+  if (rawVal === undefined && itemVal !== undefined) {
+    rawVal = itemVal;
+  }
+
+  if (rawVal === undefined || rawVal === null) return null;
+
+  // Binary flags
+  const binaryFeatures = [
+    'Typical Chest Pain',
+    'HTN',
+    'DM',
+    'Current Smoker',
+    'EX-Smoker',
+    'FH',
+    'Obesity',
+    'CRF',
+    'CVA',
+    'Airway disease',
+    'Thyroid Disease',
+    'CHF',
+    'DLP',
+    'Edema',
+    'Weak Peripheral Pulse',
+    'Lung rales',
+    'Systolic Murmur',
+    'Diastolic Murmur',
+    'Dyspnea',
+    'Atypical',
+    'Nonanginal',
+    'Exertional CP',
+    'LowTH Ang',
+    'Q Wave',
+    'St Elevation',
+    'St Depression',
+    'T inversion',
+    'Tinversion',
+    'LVH',
+    'Poor R Progression',
+  ];
+
+  if (binaryFeatures.includes(feature) || rawVal === 0 || rawVal === 1) {
+    if (rawVal === 1 || rawVal === '1' || rawVal === 'Yes') return 'Yes';
+    if (rawVal === 0 || rawVal === '0' || rawVal === 'No') return 'No';
+  }
+
+  // Units
+  if (feature === 'Age') return `${rawVal} yrs`;
+  if (feature === 'BP') return `${rawVal} mmHg`;
+  if (feature === 'PR') return `${rawVal} bpm`;
+  if (feature === 'EF-TTE' || feature === 'EF_TTE') return `${rawVal}%`;
+  if (['TG', 'LDL', 'HDL', 'FBS', 'CR', 'BUN'].includes(feature)) return `${rawVal} mg/dL`;
+  if (feature === 'HB') return `${rawVal} g/dL`;
+  if (feature === 'ESR') return `${rawVal} mm/hr`;
+  if (['K', 'Na'].includes(feature)) return `${rawVal} mEq/L`;
+  if (feature === 'WBC') return `${rawVal} /µL`;
+  if (feature === 'BMI') return `${rawVal} kg/m²`;
+  if (feature === 'Weight') return `${rawVal} kg`;
+  if (feature === 'Length') return `${rawVal} cm`;
+  if (feature === 'Region RWMA') return `${rawVal} regions`;
+
+  return typeof rawVal === 'number' ? `${rawVal}` : String(rawVal);
 }
 
 export function ShapWaterfall() {
-  const { prediction, patient, focusedVessel } = usePatientStore();
+  const { prediction, patient, focusedVessel, setFocusedVessel } = usePatientStore();
 
-  const activeTarget = (focusedVessel && ['lad', 'lcx', 'rca'].includes(focusedVessel)) ? focusedVessel : 'cad';
+  const activeTarget: 'cad' | 'lad' | 'lcx' | 'rca' =
+    focusedVessel && ['lad', 'lcx', 'rca'].includes(focusedVessel)
+      ? (focusedVessel as ArteryId)
+      : 'cad';
+
   const targetLabel =
     activeTarget === 'lad'
       ? 'LAD (Anterior) Attributions'
@@ -41,33 +108,29 @@ export function ShapWaterfall() {
       ? 'LCX (Lateral) Attributions'
       : activeTarget === 'rca'
       ? 'RCA (Inferior) Attributions'
-      : 'CAD Risk Factor Attributions';
+      : 'CAD Global Attributions';
 
-  // Combine top positive (risk) and top negative (protective) features together for activeTarget
+  // Extract real SHAP features for the active target
   const { displayFeatures, maxVal } = useMemo(() => {
-    const raw = prediction?.explanations?.[activeTarget as 'cad' | 'lad' | 'lcx' | 'rca']?.top || [];
+    const raw = prediction?.explanations?.[activeTarget]?.top || [];
+
+    if (raw.length === 0) {
+      return { displayFeatures: [], maxVal: 0.15 };
+    }
 
     const pos = raw.filter((f) => f.shap > 0).sort((a, b) => b.shap - a.shap);
     const neg = raw.filter((f) => f.shap < 0).sort((a, b) => a.shap - b.shap);
 
-    // Guaranteed realistic clinical fallbacks if raw data only has one direction
-    const fallbackPos = [
-      { feature: 'Typical Chest Pain', shap: 0.14, group: 'Symptoms' },
-      { feature: 'Age', shap: 0.08, group: 'Demographics' },
-      { feature: 'HTN', shap: 0.05, group: 'History' },
-    ];
-    const fallbackNeg = [
-      { feature: 'HDL Cholesterol', shap: -0.06, group: 'Lipids' },
-      { feature: 'Normal Glucose', shap: -0.04, group: 'Lab' },
-    ];
+    let selected: typeof raw = [];
+    if (pos.length > 0 && neg.length > 0) {
+      selected = [...pos.slice(0, 3), ...neg.slice(0, 2)];
+    } else {
+      // Sort by absolute magnitude if only one polarity is present
+      selected = [...raw].sort((a, b) => Math.abs(b.shap) - Math.abs(a.shap)).slice(0, 5);
+    }
 
-    const selectedPos = pos.length > 0 ? pos.slice(0, 3) : fallbackPos;
-    const selectedNeg = neg.length > 0 ? neg.slice(0, 2) : fallbackNeg;
-
-    const combined = [...selectedPos, ...selectedNeg];
-    const max = Math.max(0.15, ...combined.map((f) => Math.abs(f.shap)));
-
-    return { displayFeatures: combined, maxVal: max };
+    const max = Math.max(0.12, ...selected.map((f) => Math.abs(f.shap)));
+    return { displayFeatures: selected, maxVal: max };
   }, [prediction, activeTarget]);
 
   if (!prediction) {
@@ -77,9 +140,9 @@ export function ShapWaterfall() {
         <div className="flex items-center justify-between">
           <div>
             <h4 className="text-[11px] font-bold text-slate-900 leading-tight">
-              Risk Factors & Protective Effects
+              TreeSHAP Feature Attributions
             </h4>
-            <p className="text-[9px] text-slate-400">TreeSHAP unified divergence (both polarities)</p>
+            <p className="text-[9px] text-slate-400">Additive feature importance per territory</p>
           </div>
           <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
             Standby
@@ -87,7 +150,7 @@ export function ShapWaterfall() {
         </div>
 
         {/* Standby Placeholder */}
-        <div className="py-3 px-2 rounded-lg bg-slate-50/80 border border-dashed border-slate-200/90 text-center flex flex-col items-center justify-center gap-1">
+        <div className="py-4 px-2 rounded-lg bg-slate-50/80 border border-dashed border-slate-200/90 text-center flex flex-col items-center justify-center gap-1">
           <p className="text-[10px] text-slate-600 font-semibold">TreeSHAP Explainability Awaiting Inference</p>
           <p className="text-[9px] text-slate-400 leading-tight">
             Run cardiovascular analysis to generate patient-specific risk factor attributions
@@ -99,86 +162,132 @@ export function ShapWaterfall() {
 
   return (
     <div className="flex flex-col gap-1.5 select-none w-full animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-[11px] font-bold text-slate-900 leading-tight">
+      {/* Header with Territory Pill Navigation */}
+      <div className="flex items-center justify-between gap-1">
+        <div className="min-w-0">
+          <h4 className="text-[11px] font-bold text-slate-900 leading-tight truncate">
             {targetLabel}
           </h4>
-          <p className="text-[9px] text-slate-400">
-            {activeTarget === 'cad' ? 'Global CAD TreeSHAP divergence' : `${activeTarget.toUpperCase()} territory specific SHAP attributions`}
+          <p className="text-[8.5px] text-slate-400">
+            {activeTarget === 'cad'
+              ? 'Global CAD risk drivers'
+              : `${activeTarget.toUpperCase()} territory model drivers`}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[9px] font-semibold">
-          <span className="flex items-center gap-1 text-teal-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
-            <span>Protective (-)</span>
-          </span>
-          <span className="flex items-center gap-1 text-rose-600">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            <span>Risk (+)</span>
-          </span>
+
+        {/* Interactive Territory Quick Switcher */}
+        <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-lg border border-slate-200/70 shrink-0">
+          <button
+            type="button"
+            onClick={() => setFocusedVessel(null)}
+            className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold transition-all cursor-pointer ${
+              activeTarget === 'cad'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            CAD
+          </button>
+          <button
+            type="button"
+            onClick={() => setFocusedVessel('lad')}
+            className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold transition-all cursor-pointer ${
+              activeTarget === 'lad'
+                ? 'bg-white text-rose-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            LAD
+          </button>
+          <button
+            type="button"
+            onClick={() => setFocusedVessel('lcx')}
+            className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold transition-all cursor-pointer ${
+              activeTarget === 'lcx'
+                ? 'bg-white text-teal-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            LCX
+          </button>
+          <button
+            type="button"
+            onClick={() => setFocusedVessel('rca')}
+            className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold transition-all cursor-pointer ${
+              activeTarget === 'rca'
+                ? 'bg-white text-blue-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            RCA
+          </button>
         </div>
       </div>
 
       {/* Diverging Bar Chart */}
       <div className="space-y-1.5 pt-0.5">
-        {displayFeatures.map((item) => {
-          const isPos = item.shap >= 0;
-          const absVal = Math.abs(item.shap);
-          const patientVal = getPatientFeatureValue(item.feature, patient);
-          const barPct = Math.min(50, (absVal / maxVal) * 50);
+        {displayFeatures.length === 0 ? (
+          <p className="text-[10px] text-slate-400 text-center py-2">
+            No significant attributions for this territory.
+          </p>
+        ) : (
+          displayFeatures.map((item) => {
+            const isPos = item.shap >= 0;
+            const absVal = Math.abs(item.shap);
+            const patientVal = formatClinicalFeatureValue(item.feature, patient, item.value);
+            const barPct = Math.min(50, (absVal / maxVal) * 50);
 
-          return (
-            <div key={item.feature} className="flex items-center gap-2 text-[10px]">
-              {/* Feature Name & Value */}
-              <div className="w-[105px] shrink-0 truncate">
-                <span className="font-semibold text-slate-800 truncate block">
-                  {item.feature}
-                </span>
-                {patientVal && (
-                  <span className="text-[8.5px] text-slate-400 font-mono block leading-none">
-                    Value: {patientVal}
+            return (
+              <div key={item.feature} className="flex items-center gap-2 text-[10px]">
+                {/* Feature Name & Actual Measured Value */}
+                <div className="w-[105px] shrink-0 truncate">
+                  <span className="font-semibold text-slate-800 truncate block">
+                    {item.feature}
                   </span>
-                )}
+                  {patientVal && (
+                    <span className="text-[8.5px] text-slate-400 font-mono block leading-none">
+                      Value: {patientVal}
+                    </span>
+                  )}
+                </div>
+
+                {/* Bipolar Diverging Bar Container with Center Axis */}
+                <div className="flex-1 relative h-3 bg-slate-100/90 rounded-md overflow-hidden flex items-center">
+                  {/* Center 0 Line */}
+                  <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-slate-300 z-10" />
+
+                  {/* Left (Protective / Negative) Bar */}
+                  {!isPos && (
+                    <div
+                      className="absolute right-1/2 top-0.5 bottom-0.5 rounded-l bg-teal-600 transition-all duration-300"
+                      style={{ width: `${barPct}%` }}
+                    />
+                  )}
+
+                  {/* Right (Risk / Positive) Bar */}
+                  {isPos && (
+                    <div
+                      className="absolute left-1/2 top-0.5 bottom-0.5 rounded-r bg-rose-500 transition-all duration-300"
+                      style={{ width: `${barPct}%` }}
+                    />
+                  )}
+                </div>
+
+                {/* Numeric Attribution Value */}
+                <div className="w-10 text-right font-mono text-[10px] font-bold shrink-0">
+                  <span className={isPos ? 'text-rose-600' : 'text-teal-700'}>
+                    {isPos ? `+${item.shap.toFixed(2)}` : item.shap.toFixed(2)}
+                  </span>
+                </div>
               </div>
-
-              {/* Bipolar Diverging Bar Container with Center Axis */}
-              <div className="flex-1 relative h-3 bg-slate-100/90 rounded-md overflow-hidden flex items-center">
-                {/* Center 0 Line */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-slate-300 z-10" />
-
-                {/* Left (Protective / Negative) Bar */}
-                {!isPos && (
-                  <div
-                    className="absolute right-1/2 top-0.5 bottom-0.5 rounded-l bg-teal-600 transition-all duration-300"
-                    style={{ width: `${barPct}%` }}
-                  />
-                )}
-
-                {/* Right (Risk / Positive) Bar */}
-                {isPos && (
-                  <div
-                    className="absolute left-1/2 top-0.5 bottom-0.5 rounded-r bg-rose-500 transition-all duration-300"
-                    style={{ width: `${barPct}%` }}
-                  />
-                )}
-              </div>
-
-              {/* Numeric Attribution Value */}
-              <div className="w-10 text-right font-mono text-[10px] font-bold shrink-0">
-                <span className={isPos ? 'text-rose-600' : 'text-teal-700'}>
-                  {isPos ? `+${item.shap.toFixed(2)}` : item.shap.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Divergence Legend Bar */}
       <div className="pt-1 border-t border-slate-100 flex items-center justify-between text-[8px] font-mono text-slate-400">
-        <span className="text-teal-700 font-semibold">◀ Lowers CAD Risk</span>
+        <span className="text-teal-700 font-semibold">◀ Lowers Stenosis Risk</span>
         <span className="text-slate-300 font-bold">| 0.0 |</span>
         <span className="text-rose-600 font-semibold">Elevates Risk ▶</span>
       </div>

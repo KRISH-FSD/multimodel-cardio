@@ -2,11 +2,13 @@ import React from 'react';
 import { usePatientStore } from '../store/store';
 import type { ArteryId } from '../store/store';
 import { ShapWaterfall } from './ShapWaterfall';
+import { getDynamicRiskStyle } from './CommandDeck';
 import {
   Activity,
   AlertTriangle,
   CheckCircle2,
   ShieldAlert,
+  Printer,
 } from 'lucide-react';
 
 export function PredictionResults() {
@@ -24,6 +26,10 @@ export function PredictionResults() {
   const rcaProb = prediction?.predictions?.rca?.probability ?? 0;
 
   const isHighRisk = cadProb >= 0.5;
+
+  const ladStyle = getDynamicRiskStyle(prediction ? ladProb : null);
+  const lcxStyle = getDynamicRiskStyle(prediction ? lcxProb : null);
+  const rcaStyle = getDynamicRiskStyle(prediction ? rcaProb : null);
 
   const handleVesselClick = (vessel: ArteryId) => {
     if (focusedVessel === vessel) {
@@ -220,12 +226,12 @@ export function PredictionResults() {
               onClick={() => handleVesselClick('lad')}
               className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer ${
                 focusedVessel === 'lad'
-                  ? 'border-rose-500 bg-rose-50/50 ring-2 ring-rose-500/20'
+                  ? `ring-2 ${ladStyle.activeRing} shadow-xs bg-white`
                   : 'border-slate-200/90 hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-rose-600">LAD</span>
+                <span className={`text-[11px] font-bold ${prediction ? ladStyle.badgeText : 'text-slate-700'}`}>LAD</span>
                 <span className="text-[8.5px] text-slate-400">Anterior</span>
               </div>
               <div className="text-sm font-extrabold text-slate-900 mt-0.5">
@@ -233,26 +239,19 @@ export function PredictionResults() {
               </div>
               <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1 mb-0.5">
                 <div
-                  className="h-full bg-rose-500 rounded-full"
-                  style={{ width: prediction ? `${ladProb * 100}%` : '0%' }}
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: prediction ? `${Math.max(5, ladProb * 100)}%` : '0%',
+                    backgroundColor: ladStyle.color,
+                  }}
                 />
               </div>
               <span
-                className={`text-[8px] font-semibold block ${
-                  prediction
-                    ? ladProb >= 0.5
-                      ? 'text-rose-600 font-bold'
-                      : 'text-slate-500'
-                    : 'text-slate-400'
+                className={`text-[8px] font-semibold block truncate ${
+                  prediction ? ladStyle.badgeText : 'text-slate-400'
                 }`}
               >
-                {prediction
-                  ? ladProb >= 0.5
-                    ? 'High Risk'
-                    : ladProb >= 0.35
-                    ? 'Moderate'
-                    : 'Normal'
-                  : 'Standby'}
+                {prediction ? ladStyle.label : 'Standby'}
               </span>
             </button>
 
@@ -262,12 +261,12 @@ export function PredictionResults() {
               onClick={() => handleVesselClick('lcx')}
               className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer ${
                 focusedVessel === 'lcx'
-                  ? 'border-teal-500 bg-teal-50/50 ring-2 ring-teal-500/20'
+                  ? `ring-2 ${lcxStyle.activeRing} shadow-xs bg-white`
                   : 'border-slate-200/90 hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-teal-700">LCX</span>
+                <span className={`text-[11px] font-bold ${prediction ? lcxStyle.badgeText : 'text-slate-700'}`}>LCX</span>
                 <span className="text-[8.5px] text-slate-400">Lateral</span>
               </div>
               <div className="text-sm font-extrabold text-slate-900 mt-0.5">
@@ -275,26 +274,19 @@ export function PredictionResults() {
               </div>
               <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1 mb-0.5">
                 <div
-                  className="h-full bg-teal-600 rounded-full"
-                  style={{ width: prediction ? `${lcxProb * 100}%` : '0%' }}
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: prediction ? `${Math.max(5, lcxProb * 100)}%` : '0%',
+                    backgroundColor: lcxStyle.color,
+                  }}
                 />
               </div>
               <span
-                className={`text-[8px] font-semibold block ${
-                  prediction
-                    ? lcxProb >= 0.5
-                      ? 'text-rose-600 font-bold'
-                      : 'text-slate-500'
-                    : 'text-slate-400'
+                className={`text-[8px] font-semibold block truncate ${
+                  prediction ? lcxStyle.badgeText : 'text-slate-400'
                 }`}
               >
-                {prediction
-                  ? lcxProb >= 0.5
-                    ? 'High Risk'
-                    : lcxProb >= 0.35
-                    ? 'Moderate'
-                    : 'Normal'
-                  : 'Standby'}
+                {prediction ? lcxStyle.label : 'Standby'}
               </span>
             </button>
 
@@ -304,12 +296,12 @@ export function PredictionResults() {
               onClick={() => handleVesselClick('rca')}
               className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer ${
                 focusedVessel === 'rca'
-                  ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-500/20'
+                  ? `ring-2 ${rcaStyle.activeRing} shadow-xs bg-white`
                   : 'border-slate-200/90 hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-blue-600">RCA</span>
+                <span className={`text-[11px] font-bold ${prediction ? rcaStyle.badgeText : 'text-slate-700'}`}>RCA</span>
                 <span className="text-[8.5px] text-slate-400">Inferior</span>
               </div>
               <div className="text-sm font-extrabold text-slate-900 mt-0.5">
@@ -317,33 +309,26 @@ export function PredictionResults() {
               </div>
               <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-1 mb-0.5">
                 <div
-                  className="h-full bg-blue-600 rounded-full"
-                  style={{ width: prediction ? `${rcaProb * 100}%` : '0%' }}
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: prediction ? `${Math.max(5, rcaProb * 100)}%` : '0%',
+                    backgroundColor: rcaStyle.color,
+                  }}
                 />
               </div>
               <span
-                className={`text-[8px] font-semibold block ${
-                  prediction
-                    ? rcaProb >= 0.5
-                      ? 'text-rose-600 font-bold'
-                      : 'text-slate-500'
-                    : 'text-slate-400'
+                className={`text-[8px] font-semibold block truncate ${
+                  prediction ? rcaStyle.badgeText : 'text-slate-400'
                 }`}
               >
-                {prediction
-                  ? rcaProb >= 0.5
-                    ? 'High Risk'
-                    : rcaProb >= 0.35
-                    ? 'Moderate'
-                    : 'Normal'
-                  : 'Standby'}
+                {prediction ? rcaStyle.label : 'Standby'}
               </span>
             </button>
           </div>
         </div>
 
-        {/* Card 3: Clinical Recommendation Box */}
-        <div className="bg-slate-50/90 rounded-xl border border-slate-200/80 p-2 space-y-0.5 shrink-0">
+        {/* Card 3: Clinical Recommendation & Export Box */}
+        <div className="bg-slate-50/90 rounded-xl border border-slate-200/80 p-2 space-y-1 shrink-0">
           <div className="flex items-center justify-between text-[9.5px]">
             <span className="font-bold text-slate-400 uppercase tracking-wider">
               Primary Territory:
@@ -371,6 +356,18 @@ export function PredictionResults() {
                   : 'Routine Clinical Follow-Up'
                 : 'Pending Cardiovascular Analysis'}
             </span>
+          </div>
+          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+            <span className="text-[8.5px] text-slate-400 font-mono">CDS Assistive Summary</span>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="flex items-center gap-1 text-[8.5px] font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2 py-0.5 rounded border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+              title="Print Clinical Assessment Summary"
+            >
+              <Printer className="w-2.5 h-2.5 text-slate-500" />
+              <span>Print Assessment</span>
+            </button>
           </div>
         </div>
 

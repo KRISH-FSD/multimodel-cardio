@@ -19,6 +19,7 @@ import { AuthModal, DoctorProfileMenu } from './components/AuthModal';
 import { NewPatientModal } from './components/NewPatientModal';
 import { PatientRecordsView } from './components/PatientRecordsView';
 import { ModelInsightsView } from './components/ModelInsightsView';
+import { ClinicalSafetyModal } from './components/ClinicalSafetyModal';
 import { usePatientStore } from './store/store';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const [isPatientDropdownOpen, setIsPatientDropdownOpen] = useState(false);
+  const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
 
   const patientDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -208,16 +210,20 @@ function App() {
       </header>
 
       {/* ── Clinical Safety Disclaimer Banner (Mandatory Requirement 5) ── */}
-      <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl px-4 py-1.5 flex items-center justify-between shadow-2xs shrink-0 select-none">
-        <div className="flex items-center gap-2">
-          <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-          <p className="text-[11px] text-amber-900 font-medium leading-none">
-            <span className="font-bold">Clinical Safety Notice:</span> Decision-support and educational prototype only. Predictions are statistical estimates and not a substitute for formal diagnostic coronary angiography (CCTA) or clinical diagnosis.
+      <div className="bg-amber-50/90 border border-amber-200/90 rounded-xl px-4 py-1.5 flex items-center justify-between shadow-2xs shrink-0 select-none gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+          <p className="text-[11px] text-amber-950 font-medium leading-tight truncate sm:whitespace-normal">
+            <span className="font-bold">⚠️ Research & Clinical Decision Support Prototype:</span> Not a certified diagnostic medical device. Predictions represent statistical model estimates and are strictly not a substitute for formal coronary angiography (CCTA) or licensed physician evaluation.
           </p>
         </div>
-        <span className="hidden sm:inline-flex text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100/90 text-amber-800 border border-amber-300/60 uppercase tracking-wider shrink-0">
-          Educational Demonstration
-        </span>
+        <button
+          type="button"
+          onClick={() => setIsSafetyModalOpen(true)}
+          className="text-[9.5px] font-mono font-bold px-2.5 py-1 rounded-lg bg-amber-100/90 hover:bg-amber-200 text-amber-900 border border-amber-300/80 uppercase tracking-wider shrink-0 cursor-pointer transition-colors shadow-2xs whitespace-nowrap"
+        >
+          Clinical Caveats & Disclaimers
+        </button>
       </div>
 
       {/* ── 2. Tab Views Switcher ── */}
@@ -406,6 +412,10 @@ function App() {
         isOpen={isNewPatientModalOpen}
         onClose={() => setIsNewPatientModalOpen(false)}
         onPatientCreated={() => setActiveTab('analysis')}
+      />
+      <ClinicalSafetyModal
+        isOpen={isSafetyModalOpen}
+        onClose={() => setIsSafetyModalOpen(false)}
       />
       <FloatingToastNotification onViewPatient={() => setActiveTab('analysis')} />
     </div>
